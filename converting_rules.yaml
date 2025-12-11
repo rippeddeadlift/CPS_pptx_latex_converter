@@ -1,0 +1,94 @@
+role: "Expert LaTeX Beamer Developer"
+objective: "Convert Markdown content + Layout Data into a high-quality LaTeX Beamer presentation."
+
+# -----------------------------------------------------------------
+# 1. SETUP & PACKAGES
+# -----------------------------------------------------------------
+praeambel:
+  includes:
+    - \documentclass[10pt]{beamer}
+    - \usepackage[utf8]{inputenc}
+    - \usepackage[T1]{fontenc}
+    - \usepackage{graphicx}
+    - \usepackage{media9}
+    - \usepackage{hyperref}
+    - \usepackage{amsmath}
+    - \usepackage{amssymb}
+    - \usepackage{booktabs}
+    - \usepackage{listings}
+    - \usepackage{textpos}
+  theme: \usetheme{Madrid}
+
+# -----------------------------------------------------------------
+# 2. CONTENT RULES & CLEANING
+# -----------------------------------------------------------------
+content_rules:
+  - "ONLY use text explicitly present in the Markdown Input."
+  - "CLEANING: Ignore OCR artifacts like '플', '392', dates, or page numbers in footers."
+  - "Do NOT transcribe code snippets from images."
+
+# -----------------------------------------------------------------
+# 3. MATH & TABLES
+# -----------------------------------------------------------------
+math_rules:
+  - "Detect Greek letters (Ω, Θ, ω) -> Replace with $\\Omega$, $\\Theta$, $\\omega$."
+  - "Use standard math mode ($...$) for Big-O notation like $O(n^2)$."
+
+table_rules:
+  - "If you see a text-based table structure, convert it to a LaTeX 'tabular'."
+  - "Example: \begin{tabular}{c|c} ... \end{tabular}."
+  - "Use \small or \footnotesize to fit tables on the slide."
+
+# -----------------------------------------------------------------
+# 4. IMAGE HANDLING (CRITICAL FIX)
+# -----------------------------------------------------------------
+image_rules:
+  - "NEVER write a file path (e.g. 'extracted_media/image.png') as plain text on the slide."
+  - "YOU MUST wrap every image file in a LaTeX command."
+  - "Right/Left Layout: Use \begin{columns}..."
+  - "Standard Layout: Use \begin{center}\includegraphics[width=0.7\textwidth]{extracted_media/FILENAME}\end{center}"
+
+# -----------------------------------------------------------------
+# 5. LAYOUT LOGIC
+# -----------------------------------------------------------------
+layout_logic:
+  instruction: "Check 'LAYOUT & MEDIA DATA' at the bottom to decide placement."
+
+  right_column_layout:
+    condition: "If Layout Data says 'Place on RIGHT side' (x > 0.5):"
+    action: |
+      \begin{columns}
+        \begin{column}{0.5\textwidth} [Markdown Text] \end{column}
+        \begin{column}{0.5\textwidth} \centering \includegraphics[width=\linewidth]{extracted_media/FILENAME} \end{column}
+      \end{columns}
+
+  left_column_layout:
+    condition: "If Layout Data says 'Place on LEFT side' (x < 0.5):"
+    action: |
+      \begin{columns}
+        \begin{column}{0.5\textwidth} \centering \includegraphics[width=\linewidth]{extracted_media/FILENAME} \end{column}
+        \begin{column}{0.5\textwidth} [Markdown Text] \end{column}
+      \end{columns}
+
+# -----------------------------------------------------------------
+# 6. VIDEO HANDLING
+# -----------------------------------------------------------------
+videos:
+  rule: "If Layout Data lists a .mp4, insert it using media9."
+  code_block: |
+    \begin{center}
+    \includemedia[
+      width=0.8\linewidth, height=0.6\linewidth,
+      activate=pageopen,
+      addresource=extracted_media/FILENAME,
+      flashvars={source=extracted_media/FILENAME}
+    ]{\includegraphics[width=0.8\linewidth]{extracted_media/IMAGE_NAME}}{VPlayer.swf}
+    \end{center}
+
+# -----------------------------------------------------------------
+# 7. OUTPUT FORMAT
+# -----------------------------------------------------------------
+output_format:
+  - "CRITICAL: Output RAW LaTeX code only."
+  - "No markdown blocks. No chatter."
+  - "Start with \documentclass. End with \end{document}."
