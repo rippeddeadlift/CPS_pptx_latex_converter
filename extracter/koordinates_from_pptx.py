@@ -1,1 +1,0 @@
-# TODO check koordinates and extract them from pptx slides

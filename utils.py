@@ -11,7 +11,8 @@ import sys
 from pathlib import Path
 import subprocess
 from unstructured_client import Dict, Tuple, Union
-
+import json
+import os
 RESET = "\033[0m"
 RED = "\033[31m"
 GREEN = "\033[32m"
@@ -376,9 +377,116 @@ def check_media_completeness(json_path, latex_code):
 
     return missing_items
 
-import json
-import os
 
+def _get_data_root(docling_data):
+    """Entpackt structure_analysis falls nötig"""
+    if isinstance(docling_data, dict) and "structure_analysis" in docling_data:
+        return docling_data["structure_analysis"]
+    return docling_data
+
+def _get_page_dimensions(data_root):
+    """Sammelt Höhen/Breiten aller Seiten"""
+    dims = {}
+    if "pages" in data_root and isinstance(data_root["pages"], dict):
+        for pid, pdata in data_root["pages"].items():
+            if "size" in pdata:
+                dims[int(pid)] = {
+                    "width": pdata["size"].get("width", 0),
+                    "height": pdata["size"].get("height", 0)
+                }
+    return dims
+
+def _get_text_items(data_root):
+    """Findet die Liste der Texte (egal ob 'texts' oder 'main_text')"""
+    if "texts" in data_root: return data_root["texts"]
+    if "main_text" in data_root: return data_root["main_text"]
+    return []
+
+def _extract_prov_data(item):
+    """Holt Seite, BBox und Ursprung aus einem Text-Item"""
+    page_no = 1
+    bbox = None
+    origin = "TOPLEFT" # Default
+    
+    if "prov" in item and isinstance(item["prov"], list) and len(item["prov"]) > 0:
+        prov = item["prov"][0]
+        page_no = prov.get("page_no", 1)
+        bbox = prov.get("bbox")
+        
+        if isinstance(bbox, dict):
+            origin = bbox.get("coord_origin", "TOPLEFT")
+            
+    return page_no, bbox, origin
+
+def _determine_zone(bbox, origin, page_height):
+    """
+    Entscheidet: Header, Title, Content oder Footer?
+    
+    NEUE LOGIK (Basiert auf deinen Debug-Daten):
+    0.00 - 0.10 = HEADER
+    0.10 - 0.25 = TITLE
+    > 0.89      = FOOTER  (Angehoben von 0.85, da Content bei 0.856 liegt!)
+    Rest        = CONTENT
+    """
+    if not bbox or page_height == 0:
+        return "content"
+
+    # Y-Koordinate holen
+    current_y = 0
+    if isinstance(bbox, dict):
+        current_y = bbox.get("t", bbox.get("y", 0))
+    elif isinstance(bbox, list):
+        current_y = bbox[1]
+
+    # Normalisieren
+    if current_y > 10000 and page_height < 10000:
+         page_height = 6858000 
+    
+    relative_y = current_y / page_height
+
+    # --- ZONING ---
+    if relative_y < 0.10: 
+        return "header"
+        
+    if relative_y < 0.25: 
+        return "title"
+        
+    if relative_y > 0.9: 
+        return "footer"
+        
+    return "content"
+
+def _assemble_final_json(slides_data, media_map):
+    cleaned_slides = []
+    max_slide = max(max(slides_data.keys()) if slides_data else 0, len(media_map))
+    
+    for i in range(max_slide):
+        slide_num = i + 1
+        data = slides_data[slide_num]
+        
+        # Alle Felder joinen
+        header_text = " ".join(data["header"])  # NEU
+        title_text = " ".join(data["title"])
+        footer_text = " | ".join(data["footer"])
+        content_text = "\n".join(data["content"])
+        
+        # Notfall-Logik anpassen:
+        # Wenn wir keinen Title haben, aber Header, könnte der Header der Title sein?
+        # Nein, wir lassen das strikt getrennt für das LLM.
+        
+        slide_obj = {
+            "slide_number": slide_num,
+            "layout_analysis": {
+                "detected_header": header_text, # NEU
+                "detected_title": title_text,
+                "detected_footer": footer_text
+            },
+            "text_content": content_text,
+            "media_files": media_map.get(i, [])
+        }
+        cleaned_slides.append(slide_obj)
+        
+    return {"slides": cleaned_slides}
 def prepare_initial_prompt(rules_file_path, json_file_path):
     """
     Reads system rules and enriched Docling Markdown.

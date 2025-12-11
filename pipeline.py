@@ -3,6 +3,7 @@ from converters.JSON_into_LaTeX_agent import generate_latex_with_retry
 from converters.pptx_into_JSON import convert_pptx_to_json
 from converters.raw_JSON_into_image_JSON import clean_and_map_media_elements, save_final_json_for_review
 from extracter.media_from_pptx import extract_media_from_pptx
+from extracter.metadata_from_pptx import extract_metadata_from_pptx
 from utils import prepare_initial_prompt
 
 from utils import (
@@ -21,32 +22,46 @@ async def step_extract_structure(config):
     )
 
 def step_extract_media(config):
-    print("Step 2/5: Extracting media and geometry...")
-    extracted_files, layout_data = extract_media_from_pptx( 
+    print("Step 2/5: Extracting media (Recursive)...")
+    layout_data = extract_media_from_pptx(
         pptx_path=str(config.PPTX_INPUT),
         output_dir=str(config.MEDIA_OUTPUT_DIR)
     )
-    global LAYOUT_DATA_STORAGE
-    LAYOUT_DATA_STORAGE = layout_data 
-    
-    return extracted_files
+    # Store globally or return for next step
+    config.LAYOUT_DATA_BY_SLIDE = layout_data
+    return layout_data
 
 def step_map_and_clean_data(config):
     print("Step 3/5: Merging Text and Geometry...")
-    
-    media_map = find_prioritized_media_references(str(config.PPTX_INPUT))
-    final_media_map = prioritize_and_clean_media_map(media_map)
-    
-    with open(config.RAW_JSON_INPUT, 'r', encoding='utf-8') as f:
-        raw_json = json.load(f)
 
-    final_json = clean_and_map_media_elements(
-        raw_json, 
-        final_media_map, 
-        layout_data=LAYOUT_DATA_STORAGE 
+    with open(config.RAW_JSON_INPUT, 'r', encoding='utf-8') as f:
+        raw_docling_json = json.load(f)
+
+    media_geometry_map = getattr(config, 'LAYOUT_DATA_BY_SLIDE', {})
+
+    global_meta = extract_metadata_from_pptx(str(config.PPTX_INPUT))
+    merged_data = clean_and_map_media_elements(
+        docling_data=raw_docling_json, 
+        media_geometry_map=media_geometry_map
     )
+    # ... inside step_map_and_clean_data ...
     
+    final_json = {
+        "presentation_meta": {
+            "file_name": config.PPTX_INPUT.name,
+            "detected_title": global_meta["title"],
+            "detected_author": global_meta["author"],
+            
+            # NOW WE HAVE BOTH:
+            "global_header_text": global_meta["global_header_text"], 
+            "global_footer_text": global_meta["global_footer_text"],
+            
+            "presentation_date": global_meta["classified_date"],
+        },
+        "slides": merged_data["slides"]
+    }
     save_final_json_for_review(final_json, str(config.CLEANED_JSON_OUTPUT))
+    
     return final_json
 
 def step_generate_latex(config):

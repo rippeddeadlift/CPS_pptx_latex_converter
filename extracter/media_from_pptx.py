@@ -10,95 +10,97 @@ def extract_media_from_pptx(pptx_path, output_dir):
     slide_width = prs.slide_width
     slide_height = prs.slide_height
 
-    extracted_files = []
-    layout_data = {} 
+    layout_data_by_slide = {}
+    
+    # We use a mutable counter to keep filenames unique across all slides
+    global_image_count = 1 
 
-    image_count = 1
-    video_count = 1
-
-    print(f"Analyzing layout and mining media for {len(prs.slides)} slides...")
+    print(f"   -> Mining {len(prs.slides)} slides for hidden media...")
 
     for i, slide in enumerate(prs.slides):
-        slide_num = i + 1
+        slide_index = i
+        slide_media = []
         
+        # We start the recursion here
         for shape in slide.shapes:
-            is_captured = False
+            global_image_count = _process_shape_recursive(
+                shape, 
+                slide_media, 
+                output_dir, 
+                global_image_count,
+                slide_width, 
+                slide_height
+            )
 
-            # --- CASE 1: BILDER & PLACEHOLDER ---
-            if shape.shape_type == MSO_SHAPE_TYPE.PICTURE or shape.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER:
-                if hasattr(shape, "image") and shape.image:
-                    
-                    # 1. ALWAYS extract the image (Thumbnail/Poster)
-                    image = shape.image
-                    # Use generic naming or try to keep extension
-                    ext = image.ext
-                    image_filename = f"image{image_count}.{ext}"
-                    filepath = os.path.join(output_dir, image_filename)
-                    
-                    with open(filepath, "wb") as f:
-                        f.write(image.blob)
-                    
-                    # Save Geometry for Image
-                    layout_data[image_filename] = _get_geo(shape, slide_width, slide_height, "image")
-                    extracted_files.append(image_filename)
-                    image_count += 1
-                    is_captured = True
-                    
-                    # 2. CHECK FOR HIDDEN VIDEO (in the same shape)
-                    # If it looks like a video placeholder, try to rescue the video file too
-                    if "media" in shape.name.lower() or "demonstrated" in shape.name.lower():
-                        video_filename = f"media{video_count}.mp4"
-                        found_video = _rescue_video_from_rels(slide, output_dir, video_filename)
-                        
-                        if found_video:
-                            print(f"  -> Match: Slide {slide_num} has Image '{image_filename}' AND Video '{video_filename}'")
-                            # Save Geometry for Video (same as image)
-                            layout_data[video_filename] = _get_geo(shape, slide_width, slide_height, "video")
-                            extracted_files.append(video_filename)
-                            video_count += 1
+        if slide_media:
+            layout_data_by_slide[slide_index] = slide_media
+            print(f"      Slide {i+1}: Found {len(slide_media)} media items")
 
-            # --- CASE 2: LEGACY MEDIA OBJECTS ---
-            elif shape.shape_type == MSO_SHAPE_TYPE.MEDIA:
-                filename = f"media{video_count}.mp4"
-                layout_data[filename] = _get_geo(shape, slide_width, slide_height, "video")
-                _create_placeholder(output_dir, filename) 
-                extracted_files.append(filename)
-                video_count += 1
-                is_captured = True
+    return layout_data_by_slide
 
-    return extracted_files, layout_data
-
-def _rescue_video_from_rels(slide, output_dir, filename):
+def _process_shape_recursive(shape, slide_media, output_dir, count, s_width, s_height):
     """
-    Scans the slide relationships to find hidden video files.
+    Recursively inspects shapes.
+    - If Group: inspects children.
+    - If Picture: saves it.
     """
-    try:
-        for rel in slide.part.rels.values():
-            if "video" in rel.target_part.content_type or "media" in rel.target_part.content_type:
-                video_blob = rel.target_part.blob
-                filepath = os.path.join(output_dir, filename)
-                
-                with open(filepath, "wb") as f:
-                    f.write(video_blob)
-                
-                return True
-    except Exception:
-        pass
     
-    return False
+    # CASE 1: GROUP (The logic we were missing!)
+    if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+        for child_shape in shape.shapes:
+            count = _process_shape_recursive(child_shape, slide_media, output_dir, count, s_width, s_height)
+        return count
 
-def _get_geo(shape, sw, sh, type_label):
-    return {
-        "file": "N/A", 
-        "type": type_label,
-        "x": round(shape.left / sw, 3),
-        "y": round(shape.top / sh, 3),
-        "w": round(shape.width / sw, 3),
-        "h": round(shape.height / sh, 3)
-    }
+    # CASE 2: PICTURE (Standard images)
+    if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
+        return _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height)
 
-def _create_placeholder(output_dir, filename):
-    filepath = os.path.join(output_dir, filename)
-    if not os.path.exists(filepath):
-        with open(filepath, 'w') as f: 
-            f.write("Placeholder")
+    # CASE 3: PICTURE PLACEHOLDER
+    if shape.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER:
+        if hasattr(shape, 'image') and shape.image:
+            return _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height)
+
+    # CASE 4: SHAPES WITH PICTURE FILL (Advanced/Optional)
+    # Some "Rectangles" are actually photos. This tries to catch them.
+    if shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE:
+        try:
+            # Type 6 is 'Picture Fill'
+            if shape.fill.type == 6:
+                # Accessing the image from a fill is tricky but this often works
+                if hasattr(shape.fill, 'fore_color') and hasattr(shape.fill.fore_color, 'type'):
+                     # We can't easily extract the blob from a Fill in python-pptx without deep hacking
+                     # So we skip saving the file, but we acknowledge it existed.
+                     pass 
+        except:
+            pass
+
+    return count
+
+def _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height):
+    try:
+        image = shape.image
+        ext = image.ext
+        filename = f"image_{count}.{ext}"
+        filepath = os.path.join(output_dir, filename)
+        
+        # Save to disk
+        with open(filepath, "wb") as f:
+            f.write(image.blob)
+            
+        # geometry calculation
+        # (Handling the fact that some grouped shapes report positions differently)
+        left = shape.left / s_width
+        top = shape.top / s_height
+        width = shape.width / s_width
+        height = shape.height / s_height
+        
+        slide_media.append({
+            "filename": filename,
+            "path": f"images/{filename}",
+            "geometry": [left, top, width, height]
+        })
+        
+        return count + 1
+    except Exception as e:
+        print(f"      Warning: Could not extract image {count}: {e}")
+        return count
