@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 
@@ -78,25 +79,34 @@ def _process_shape_recursive(shape, slide_media, output_dir, count, s_width, s_h
 
 def _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height):
     try:
+        # 1. Get Image Data
         image = shape.image
         ext = image.ext
         filename = f"image_{count}.{ext}"
+        
+        # 2. Save File to Disk (Absolute Path from Config)
+        # output_dir comes from config.MEDIA_OUTPUT_DIR
         filepath = os.path.join(output_dir, filename)
         
-        # Save to disk
         with open(filepath, "wb") as f:
             f.write(image.blob)
             
-        # geometry calculation
-        # (Handling the fact that some grouped shapes report positions differently)
+        # 3. Generate Relative Path for LaTeX (The Fix)
+        # We extract "extracted_media" dynamically from the path provided
+        # This makes it 100% sync'd with your Config
+        relative_folder_name = Path(output_dir).name 
+        json_relative_path = f"{relative_folder_name}/{filename}"
+            
+        # 4. Geometry Calculation
         left = shape.left / s_width
         top = shape.top / s_height
         width = shape.width / s_width
         height = shape.height / s_height
         
+        # 5. Append to List
         slide_media.append({
             "filename": filename,
-            "path": f"images/{filename}",
+            "path": json_relative_path, # e.g. "extracted_media/image_1.png"
             "geometry": [left, top, width, height]
         })
         

@@ -1,120 +1,145 @@
 import ollama
 import re
+from pathlib import Path
 from utils import compile_tex_to_pdf
 from validators import check_media_completeness
 
-MAX_RETRIES = 3
-LLM_MODEL = 'qwen3:8b' 
+
 
 def extract_latex_content(text):
     """
-    Isoliert den LaTeX-Code zwischen \documentclass und \end{document}.
-    Entfernt Markdown-Blöcke und Chat-Antworten.
+    Verbesserte Extraktion: Entfernt Markdown-Wrapper robuster
+    und sucht präziser nach dem Dokumenten-Rumpf.
     """
-    # 1. Markdown-Code-Syntax entfernen
-    text = text.replace("```latex", "").replace("```", "").strip()
+    # 1. Entferne Code-Block Marker (egal ob ```latex, ```tex oder nur ```)
+    pattern = r"```(?:latex|tex)?\s*([\s\S]*?)\s*```"
+    match = re.search(pattern, text, re.IGNORECASE)
+    if match:
+        text = match.group(1)
     
-    # 2. Suche nach dem echten Start (\documentclass)
-    # Wir nutzen Regex, um auch Whitespace-Variationen zu fangen
-    start_pattern = r"\\documentclass"
-    end_pattern = r"\\end\{document\}"
+    # 2. Suche Start und Ende
+    # Manche LLMs schreiben Text VOR \documentclass, das muss weg.
+    start_pattern = re.compile(r"(\\documentclass.*)", re.IGNORECASE | re.DOTALL)
+    end_pattern = re.compile(r"(\\end\s*\{\s*document\s*\})", re.IGNORECASE)
     
-    start_match = re.search(start_pattern, text)
-    end_match = re.search(end_pattern, text)
+    start_match = start_pattern.search(text)
+    end_match = end_pattern.search(text)
     
     if start_match:
-        # Schneide alles vor \documentclass weg
         text = text[start_match.start():]
-    else:
-        # Fallback: Wenn kein documentclass gefunden wurde, ist der Code eh kaputt,
-        # aber wir geben das Beste zurück, was wir haben.
-        print("Warning: No \\documentclass found in LLM output.")
-
+    
     if end_match:
-        # Schneide alles nach \end{document} weg
         text = text[:end_match.end()]
         
-    return text
+    return text.strip()
+
+def parse_latex_log_errors(log_path):
+    """
+    Extrahiert NUR die relevanten Fehlerzeilen aus dem Log.
+    LaTeX Logs sind sehr lang, das LLM braucht nur die Zeilen, die mit '!' beginnen.
+    """
+    errors = []
+    if not log_path.exists():
+        return "Log file missing."
+        
+    with open(log_path, 'r', encoding='latin-1', errors='replace') as f:
+        lines = f.readlines()
+        
+    for i, line in enumerate(lines):
+        if line.startswith('!'):
+            context = "".join(lines[i:i+2]).strip()
+            errors.append(context)
+        elif "Error:" in line:
+            errors.append(line.strip())
+
+    if not errors:
+        return "\n".join(lines[-15:])
+    
+    return "\n".join(errors[:5])
 
 def generate_latex_with_retry(config, prompt_initial):
+    system_prompt = (
+    "You are a strict LaTeX Beamer code generator machine. "
+    "OBJECTIVE: Convert the provided JSON data into a compiling LaTeX Beamer presentation."
+    "CRITICAL RULES:\n"
+    "1. Output ONLY valid LaTeX code. No explanations, no markdown blocks.\n"
+    "2. Start strictly with \\documentclass{beamer} and end with \\end{document}.\n"
+    "3. Use [fragile] for ANY frame containing code listings.\n"
+    "4. Do NOT hallucinate content. Use strictly the provided JSON text and images."
+)
+
     messages = [
+        {'role': 'system', 'content': system_prompt},
         {'role': 'user', 'content': prompt_initial}
     ]
-    
-    print(f"Starting generation loop (Max retries: {MAX_RETRIES})...")
 
-    for attempt in range(1, MAX_RETRIES + 1):
-        print(f"--- Attempt {attempt}/{MAX_RETRIES} ---")
+    print(f"Starting Agentic Generation (Model: {config.AGENT_LLM_MODEL})...")
+    latex_code = ""
+
+    for attempt in range(1, config.AGENT_MAX_RETRIES + 1):
+        print(f"\n--- Attempt {attempt}/{config.AGENT_MAX_RETRIES} ---")
         
         try:
-            response = ollama.chat(
-                model=LLM_MODEL,
-                messages=messages
-            )
+            # 1. Call LLM
+            response = ollama.chat(model=config.AGENT_LLM_MODEL, messages=messages)
             raw_content = response['message']['content']
             
-            # --- HIER PASSIERT DIE MAGIE ---
+            # 2. Sanitize
             latex_code = extract_latex_content(raw_content)
-            # -------------------------------
+            
+            if not latex_code:
+                print("Warning: Received empty or invalid LaTeX content.")
+                messages.append({'role': 'assistant', 'content': raw_content})
+                messages.append({'role': 'user', 'content': "Error: No valid \\documentclass found. Please output ONLY the LaTeX code."})
+                continue
 
-            # Validator Check (Missing Media)
+            # 3. Validate Logic (Images)
             missing_errors = check_media_completeness(config.CLEANED_JSON_OUTPUT, latex_code)
             
             if missing_errors:
-                print(f"Validation Failed: Found {len(missing_errors)} missing items.")
-                error_msg = "\n".join(missing_errors)
-                
+                print(f"Logical Error: Missing {len(missing_errors)} images.")
                 feedback = (
-                    f"The generated code is incomplete. You ignored strict rules.\n"
-                    f"ERRORS FOUND:\n{error_msg}\n"
-                    f"RULE REMINDER: If you see .mp4, you MUST use the \\includemedia block defined in the rules.\n"
-                    f"Please regenerate the FULL LaTeX code correcting these errors."
+                    f"Logic Check Failed: Your code is missing required media files.\n"
+                    f"MISSING FILES:\n" + "\n".join(missing_errors) + "\n"
+                    f"Please regenerate the code and ensure ALL images are included via \\includegraphics."
                 )
-                
-                # Update History
-                messages.append({'role': 'assistant', 'content': raw_content}) # Wir geben dem LLM seine rohe Antwort zurück
+                messages.append({'role': 'assistant', 'content': raw_content})
                 messages.append({'role': 'user', 'content': feedback})
-                
-                print("Feedback sent to LLM: Missing Media.")
                 continue 
 
-            # Syntax Check (Compiler)
-            temp_tex = config.RESULTS_DIR / "temp_debug.tex"
+            # 4. Validate Syntax (Compilation)
+            temp_tex = config.RESULTS_DIR / f"temp_attempt_{attempt}.tex"
             with open(temp_tex, "w", encoding="utf-8") as f:
                 f.write(latex_code)
-                
+            
+            print(f"   -> Compiling syntax check...")
+            # Wichtig: compile_tex_to_pdf muss True/False zurückgeben
             is_valid_syntax = compile_tex_to_pdf(temp_tex, config.RESULTS_DIR)
             
             if is_valid_syntax:
-                print("Validation Passed: Syntax is correct.")
-                return latex_code
-            else:
-                print("Validation Failed: Compilation Error.")
+                print("SUCCESS: PDF compiled and logic verified!")
+                return latex_code 
                 
-                log_file = config.RESULTS_DIR / "temp_debug.log"
-                log_content = "Log not found."
-                if log_file.exists():
-                    with open(log_file, 'r', encoding='latin-1') as f:
-                        lines = f.readlines()
-                        log_content = "\n".join(lines[-20:])
+            else:
+                print("Syntax Error: Compilation failed.")
+                log_file = config.RESULTS_DIR / f"temp_attempt_{attempt}.log"
+                
+                # Hier rufen wir die verbesserte Log-Parsing Funktion auf
+                error_snippet = parse_latex_log_errors(log_file)
                 
                 feedback = (
-                    f"The code has syntax errors and cannot compile.\n"
-                    f"LATEX COMPILER LOG:\n{log_content}\n"
-                    f"Please fix the syntax errors and regenerate the code.\n"
-                    f"CRITICAL: Output ONLY valid LaTeX code starting with \\documentclass."
+                    f"Compilation Failed. Fix the LaTeX syntax errors based on this log output:\n"
+                    f"```\n{error_snippet}\n```\n"
+                    f"Common fixes: Escape special characters (%, _, &), check closing brackets, ensure environment names are correct."
                 )
                 
                 messages.append({'role': 'assistant', 'content': raw_content})
                 messages.append({'role': 'user', 'content': feedback})
-                
                 continue
 
         except Exception as e:
-            print(f"Error during LLM call: {e}")
-            import traceback
-            traceback.print_exc()
+            print(f"Critical Error: {e}")
             break
 
-    print("Max retries reached. Returning last generated result.")
-    return latex_code # Im schlimmsten Fall geben wir den letzten Versuch zurück
+    print("Max retries reached. Returning best effort (may be broken).")
+    return latex_code

@@ -32,6 +32,10 @@ class Config:
         RAW_JSON_INPUT = OUTPUT_DIR / (PPTX_INPUT.stem + '.json')
 
     CLEANED_JSON_OUTPUT = OUTPUT_DIR / (PPTX_INPUT.stem + "_cleaned.json")
+    AGENT_MAX_RETRIES = 3    
+    #AGENT_LLM_MODEL = 'deepseek-coder:6.7b-instruct' very bad
+    AGENT_LLM_MODEL = 'qwen3:8b'           
+    #AGENT_LLM_MODEL = 'qwen2.5-coder:14b'   Long wait, bad results
 
     @classmethod
     def setup_directories(cls):
@@ -51,7 +55,7 @@ async def run_pipeline():
 
 
         pipeline.step_extract_media(Config)
-        pipeline.step_map_and_clean_data(Config)
+        pipeline.step_process_and_optimize_data(Config)
         latex_code = pipeline.step_generate_latex(Config)
         success = pipeline.step_save_and_compile(Config, latex_code)
 
