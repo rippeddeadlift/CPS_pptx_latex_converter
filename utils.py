@@ -701,76 +701,79 @@ def _create_mixed_items(text_items, media_files):
     mixed.sort(key=sort_key)
     return mixed
 
-# --- Helper 5: Zoning Logic (Der Kern) ---
-# --- Helper 5: Zoning Logic (Fix für Tabellen) ---
-# --- Helper 5: Zoning Logic (Final Fix) ---
+
 def _distribute_to_zones(mixed_items, detected_title="", detected_footer=""):
-    """Verteilt die Items in die 4 Zonen."""
+    # Sicherstellen, dass 're' importiert ist
+    import re 
+    
+    print("\n--- DEBUG ZONING LOGIC START ---")
     zones = {"top_content": [], "left_column": [], "right_column": [], "flow_content": []}
     
+    # --- FIX: FOOTER PARTS INITIALISIERUNG ---
+    footer_parts = []
+    if detected_footer:
+        # Berechnet die Einzelteile des Footers für den Vergleich
+        parts = [p.strip().lower() for p in detected_footer.split('|')]
+        footer_parts = [p for p in parts if len(p) > 0]
+    # ------------------------------------------
+
     # 1. VISUELLE BARRIERE
-    # Wo beginnt der "Body" (Bilder/Tabellen)?
     top_barrier_y = 1.0 
     has_layout_elements = False
     
+    print(f"Scanning for Barrier (Default: 1.0)...")
     for item in mixed_items:
         if item['type'] in ['image', 'table']:
             if item.get('bbox'):
                 y = item['bbox'][1]
-                # Wir ignorieren nur Elemente ganz oben an der Kante
-                if y > 0.08: 
-                    if y < top_barrier_y: top_barrier_y = y
+                print(f"  -> Found Structure Element '{item['text'][:20]}...': y={y:.3f}")
+                if y > 0.10: 
+                    if y < top_barrier_y: 
+                        top_barrier_y = y
+                        print(f"     => NEW BARRIER SET: {top_barrier_y:.3f}")
                     has_layout_elements = True
     
     if not has_layout_elements:
-        top_barrier_y = 0.25 
+        top_barrier_y = 0.25
+        print(f"  -> No structure elements found. Fallback Barrier: {top_barrier_y}")
+    else:
+        print(f"  -> FINAL BARRIER: {top_barrier_y:.3f}")
 
-    # 2. FOOTER PARTS VORBEREITEN
-    # Wir zerlegen den Footer String ("Datum | Seite | Quelle") in Einzelteile
-    footer_parts = []
-    if detected_footer:
-        # Split am Pipe '|' und bereinigen
-        parts = [p.strip().lower() for p in detected_footer.split('|')]
-        # Nur Teile aufnehmen, die nicht leer sind
-        footer_parts = [p for p in parts if len(p) > 0]
-
-    # Regex für typische Footer-Elemente (als Backup)
-    footer_regex = re.compile(r'^(\d{1,2}\.\d{1,2}\.\d{2,4})$|^(seite\s*\d+)$|^(page\s*\d+)$', re.IGNORECASE)
-
-    # 3. VERTEILUNG
+    # 2. VERTEILUNG
     has_columns = False
     
     def clean_str(s): return " ".join(str(s).lower().split())
     clean_title = clean_str(detected_title)
     
-    for item in mixed_items:
+    footer_regex = re.compile(r'^(\d{1,2}\.\d{1,2}\.\d{2,4})$|^(seite\s*\d+)$|^(page\s*\d+)$', re.IGNORECASE)
+
+    for i, item in enumerate(mixed_items):
+        text_short = item['text'][:30].replace('\n', ' ')
+        print(f"\nItem {i}: '{text_short}...'")
+        
         text = item['text']
         bbox = item.get('bbox')
         item_type = item.get('type')
         forced_pos = item.get('forced_pos')
         clean_text = clean_str(text)
         
-        # --- A. FILTER (Aggressiv) ---
-        
-        # 1. Titel-Check
+        # --- A. FILTER (Footer/Titel) ---
         if item_type == "text" and clean_title and clean_text == clean_title:
+            print("  -> ACTION: SKIP (Title Match)")
             continue
             
-        # 2. Footer-Check (Smart)
         is_footer = False
-        # a) Exakter Match mit einem Footer-Teil (z.B. "seite 2" == "seite 2")
         if clean_text in footer_parts: is_footer = True
-        
-        # b) Regex Match (für Datum/Seitenzahl egal wo sie stehen)
         if footer_regex.match(text.strip()): is_footer = True
-        
-        # c) Position Check (ganz unten ist fast immer Footer)
         if bbox and bbox[1] > 0.94: is_footer = True
         
-        if is_footer: continue
+        if is_footer: 
+            print("  -> ACTION: SKIP (Footer Match)")
+            continue
 
-        # --- B. FALLBACK (Ohne BBox) ---
+        # --- B. FALLBACK ---
         if not bbox:
+            print(f"  -> NO BBOX. Forced Pos: {forced_pos}")
             if forced_pos == "left": zones["left_column"].append(text); has_columns=True
             elif forced_pos == "right": zones["right_column"].append(text); has_columns=True
             elif forced_pos == "top": zones["top_content"].append(text)
@@ -778,14 +781,16 @@ def _distribute_to_zones(mixed_items, detected_title="", detected_footer=""):
             continue
 
         x, y, w, h = bbox
+        h = bbox[3] # Höhe extrahieren
+        print(f"  -> BBOX: x={x:.3f}, y={y:.3f}, w={w:.3f}, h={h:.3f}")
         
-        # --- C. IMAGE FORCING ---
+        # --- C. FORCED POS ---
         if forced_pos:
+            print(f"  -> FORCED POS: {forced_pos}")
             if forced_pos == "top": zones["top_content"].append(text)
             elif forced_pos == "left": zones["left_column"].append(text); has_columns=True
             elif forced_pos == "right": zones["right_column"].append(text); has_columns=True
             elif forced_pos == "center":
-                # Nur nach oben, wenn es über der Barriere ist
                 if y < top_barrier_y: zones["top_content"].append(text)
                 else: zones["flow_content"].append(text)
             else: zones["flow_content"].append(text)
@@ -793,33 +798,47 @@ def _distribute_to_zones(mixed_items, detected_title="", detected_footer=""):
 
         # --- D. TOP CONTENT ENTSCHEIDUNG ---
         is_structure_element = (item_type == 'table')
-        
-        # FIX: Tabellen dürfen NICHT nach oben, außer sie kleben an der Decke (< 5%)
         should_go_top = False
         
+        is_wide = w > 0.85 
+        is_above = y < (top_barrier_y - 0.02)
+        is_short = h < 0.25 
+        
+        print(f"  -> TOP CHECKS: is_wide={is_wide}, is_above={is_above}, is_short={is_short}")
+        
         if is_structure_element:
-             if y < 0.05: should_go_top = True
+             if y < 0.05: should_go_top = True # Tabellen nur ganz oben erlaubt
+             print(f"  -> TABLE CHECK: y={y:.3f} < 0.05? {should_go_top}")
         else:
-            # Text darf nach oben, wenn er breit ist ODER visuell über der Barriere liegt
-            # Wir nutzen 0.85 als Breite
-            is_wide = w > 0.85 
-            # Puffer: Muss 2% über dem Start der Spalten liegen
-            is_above = y < (top_barrier_y - 0.02)
-            should_go_top = is_wide or is_above
+            if is_above and is_short: should_go_top = True
+            elif is_wide and y < 0.35 and is_short: should_go_top = True
+            
+            print(f"  -> TEXT CHECK: should_go_top={should_go_top}")
 
         if should_go_top:
+            print("  -> DECISION: TOP_CONTENT")
             zones["top_content"].append(text)
             continue
 
         # --- E. SPALTEN AUFTEILUNG ---
+        print(f"  -> DECISION: COLUMN/FLOW")
+        
+        if w > 0.85:
+             zones["flow_content"].append(text)
+             print(f"     -> FLOW (Wide)")
+             continue
+
         center_x = x + (w/2)
         if center_x < 0.50:
             zones["left_column"].append(text)
+            print("     -> LEFT")
         else:
             zones["right_column"].append(text)
+            print("     -> RIGHT")
         
         has_columns = True
 
+    print("--- DEBUG ZONING LOGIC END ---\n")
     strategy = "columns" if has_columns else "standard_flow"
     return zones, strategy
 

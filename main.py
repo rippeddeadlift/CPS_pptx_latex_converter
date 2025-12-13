@@ -5,7 +5,7 @@ from datetime import datetime
 
 # Wir brauchen hier nur 'pipeline' und 'Config'-relevante Utils
 import pipeline
-from utils import get_and_create_next_run_dir, RED, RESET
+from utils import get_and_create_next_run_dir, RESET
 
 class Config:
     PPTX_INPUT = Path('./input/Algorithmik.pptx')
@@ -65,12 +65,12 @@ async def run_pipeline():
             print(f"\n{pipeline.YELLOW}FINISHED: Pipeline finished with compilation errors.{RESET}")
 
     except FileNotFoundError as e:
-        print(f"\n{RED}CRITICAL ERROR: File missing.{RESET}")
-        print(f"{RED}{e}{RESET}")
+        print(f"\n{pipeline.RED}CRITICAL ERROR: File missing.{RESET}")
+        print(f"{pipeline.RED}{e}{RESET}")
         sys.exit(1)
     except Exception as e:
-        print(f"\n{RED}CRITICAL ERROR: An unexpected error occurred.{RESET}")
-        print(f"{RED}{e}{RESET}")
+        print(f"\n{pipeline.RED}CRITICAL ERROR: An unexpected error occurred.{RESET}")
+        print(f"{pipeline.RED}{e}{RESET}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
