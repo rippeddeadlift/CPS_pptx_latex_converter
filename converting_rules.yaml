@@ -1,112 +1,116 @@
-role: "Expert LaTeX Beamer Developer"
-objective: "Render a professional Beamer presentation strictly following the provided layout instructions."
-
-# -----------------------------------------------------------------
-# 1. INPUT UNDERSTANDING
-# -----------------------------------------------------------------
-input_structure:
-  presentation_meta: 'Metadata for \title, \author, \date, \institute.'
-  slides:
-    - "layout_analysis": Title and Header info.
-    - "llm_layout_instruction": THE BLUEPRINT. Contains 'strategy', 'image_position', and content 'zones'.
-    - "media_files": Reference list for image paths.
-
-# -----------------------------------------------------------------
-# 2. PREAMBLE (Standard)
-# -----------------------------------------------------------------
-preamble:
-  class: \documentclass[aspectratio=169, 10pt]{beamer}
-  packages:
-    - \usepackage[utf8]{inputenc}
-    - \usepackage{graphicx}
-    - \usepackage{booktabs} 
-    - \usepackage{amsmath}
-    - \usepackage{amssymb}
-    - \usepackage{listings}
-    - \usepackage{xcolor}
-  theme_config: |
-    \usetheme{Madrid}
-    \usecolortheme{default}
-    \setbeamerfont{title}{size=\Large, series=\bfseries}
-    \setbeamerfont{frametitle}{size=\large}
-
-# -----------------------------------------------------------------
-# 3. LAYOUT LOGIC (THE NEW CORE)
-# -----------------------------------------------------------------
-# The Python engine has already calculated the layout. Follow 'llm_layout_instruction' blindly.
-
-layout_rules:
-  
-  # STRATEGY A: COLUMNS
-  # Trigger: When json.llm_layout_instruction.strategy == "columns"
-  columns_strategy: |
-    1. Start \begin{frame}[fragile]{Title}
-    
-    2. TOP CONTENT (Intro):
-       - Check `zones.top_content`.
-       - If exists: Render items as standard text/itemize spanning full width.
-       - Insert a small vertical space after if needed.
-       
-    3. COLUMNS SETUP: 
-       - \begin{columns}[T]
-    
-    4. LEFT COLUMN (0.58\textwidth):
-       - If `zones.left_column` has text: Render items.
-       - If `image_position` == "left": Insert \includegraphics here.
-       
-    5. RIGHT COLUMN (0.38\textwidth):
-       - If `zones.right_column` has text: Render items.
-       - If `image_position` == "right": Insert \includegraphics here.
-       
-    6. Close: \end{columns} \end{frame}
-
-  # STRATEGY B: STANDARD FLOW
-  # Trigger: When json.llm_layout_instruction.strategy == "standard_flow"
-  flow_strategy: |
-    1. Start \begin{frame}[fragile]{Title}
-    
-    2. HEADER IMAGE (If `image_position` == "top"):
-       - \begin{center}\includegraphics[height=0.4\textheight]{...}\end{center}
-       
-    3. CONTENT:
-       - Iterate through `zones.flow_content`.
-       - Render text as itemize or plain text.
-       
-    4. FOOTER IMAGE (If `image_position` == "bottom" or "center" or "none" but media exists):
-       - \begin{figure}[h]\centering\includegraphics[width=0.7\textwidth]{...}\end{figure}
-       
-    5. Close: \end{frame}
-
-# -----------------------------------------------------------------
-# 4. CONTENT RENDERING RULES
-# -----------------------------------------------------------------
-content_rules:
-  tables: |
-    - Detect "DETECTED_TABLE_START". 
-    - Render as: \begin{table}[]\centering\small \begin{tabular}{...} ... \end{tabular} \end{table}
-    - Use \toprule, \midrule, \bottomrule. Replace '|' with '&'.
-  
-  math: |
-    - Replace Unicode with LaTeX Math:
-    - "Ω" -> $\Omega$
-    - "Θ" -> $\Theta$
-    - "O(n)" -> $O(n)$
-    - "n²" -> $n^2$
-
-  code: |
-    - Detect code patterns (public, int, void, {, }).
-    - WRAP IN: \begin{lstlisting} ... \end{lstlisting}
-    - NEVER put lstlisting inside \itemize directly (close itemize first).
-
-  images: |
-    - Use the exact filename from `media_files`.
-    - If you encounter a text line like "[[IMAGE: filename.png]]" inside a zone:
-      -> REPLACE it with `\includegraphics[width=\linewidth]{filename.png}` immediately at that position.
-      -> Do not wrap it in figure if it is inside a column.
-
-# -----------------------------------------------------------------
-# 5. OUTPUT FORMAT
-# -----------------------------------------------------------------
 output_format:
-  - 'Return ONLY valid raw LaTeX code.'
-  - 'Start with \documentclass. End with \end{document}.'
+  - >
+    CRITICAL: Return ONLY the LaTeX code inside the \begin{frame}[fragile]{<INSERT_JSON_TITLE_HERE>}...\end{frame} environment.
+  - >
+    CRITICAL: Do NOT include preamble, \documentclass, or markdown blocks.
+
+layout_enforcement: >
+    CRITICAL LAYOUT RULES:
+    1. EXCEPTION: The slide title goes ONLY into \begin{frame}[fragile]{TITLE}.
+    2. RULE: For ALL other content (text, lists, code, images, tables), you MUST check the JSON for a 'geometry' field with x, y, w.
+    3. If 'geometry' EXISTS, YOU ARE STRICTLY FORBIDDEN from using any standard LaTeX flow (no itemize, tabbing, or images outside \placeat).
+    4. Every such element MUST be wrapped with the exact values in: \placeat{x}{y}{w}{CONTENT}
+    5. FAILURE TO APPLY \placeat to ALL elements with geometry is a CRITICAL ERROR.
+    6. Do NOT use \begin{picture}, \put, TikZ nodes, or any other positioning. Use ONLY the provided \placeat command.
+    7. The ONLY allowed flow is: slide title in \begin{frame}, then a SEQUENCE of \placeat commands – no further structure.
+
+example_block:
+  - >
+    EXAMPLES (MANDATORY PATTERN):
+    Given an element:
+      {"type":"text","text":"Hello","geometry":{"x":0.1,"y":0.2,"w":0.3}}
+    Output:
+      \placeat{0.1}{0.2}{0.3}{Hello}
+    For a picture:
+      {"type":"picture","image_path":"img.png","geometry":{"x":0.55,"y":0.45,"w":0.25}}
+    Output:
+      \placeat{0.55}{0.45}{0.25}{\includegraphics[width=\linewidth, height=0.7\textheight, keepaspectratio]{img.png}}
+    For a table:
+      {"type":"table","table_rows": [...], "geometry": {"x":0.2,"y":0.6,"w":0.5}}
+    Output:
+      \placeat{0.2}{0.6}{0.5}{\resizebox{\linewidth}{!}{\begin{tabular}...}}
+    THE SEQUENCE OF THE SLIDE IS:
+      \begin{frame}[fragile]{Title}
+      \placeat{...}{...}{...}{...}
+      \placeat{...}{...}{...}{...}
+      (... as needed ...)
+      \end{frame}
+
+structure:
+  frame_setup:
+    syntax_enforcement: >
+      Start each slide only with:\n\begin{frame}[fragile]{<INSERT_JSON_TITLE_HERE>}  
+      End strictly with \end{frame}.
+
+  title_handling:
+    source: >
+      Extract content from JSON field 'title'.
+    sanitization: >
+      Escape all LaTeX special characters in the title (convert "_", "&", "%", etc.)
+    placement: >
+      Place the sanitized title ONLY inside the second braces of \begin{frame}[fragile]{TITLE}.
+    prohibition: >
+      NEVER place the title as normal text, in a placeat block, or as \frametitle inside the body.
+
+  layout_handling:
+    trigger: >
+      For EVERY element in JSON["elements"]:
+          IF "geometry" field exists,
+              YOU MUST wrap in \placeat{x}{y}{w}{...} with the exact numbers (not rounded or altered).
+    action: >
+      The CONTENT of every \placeat is the corresponding item: text, table, image, code, etc.
+      No other wrapping or grouping.
+    fallback: >
+      ONLY IF an element does NOT have 'geometry', may you use standard itemize/enumerate/tabbing for that element.
+
+  # --- INHALTS-TYPEN (INSIDE \placeat) ---
+  tables:
+    trigger: >
+      If "table_rows" present in element.
+    action: >
+      INSIDE the \placeat: use ONLY \resizebox{\linewidth}{!}{\begin{tabular}...}
+    prohibition: >
+      NEVER use \begin{table} (float) or place tabular outside \placeat.
+    constraint: >
+      Wrap tabular INSIDE resizebox to always fit the given width.
+
+  images:
+    trigger: >
+      For every picture or image-type element with "image_path".
+    action: >
+      INSIDE the \placeat: use \includegraphics[width=\linewidth, height=0.7\textheight, keepaspectratio]{...}
+    constraint: >
+      The image should fill the \placeat width perfectly via width=\linewidth.
+
+  code_blocks:
+    trigger: >
+      If element or consecutive elements are lines of programming code (Java, C, Pseudocode).
+    action: >
+      MERGE all consecutive code lines into exactly ONE lstlisting environment inside a \placeat.
+    environment: >
+      Use \begin{lstlisting}[language=Java, basicstyle=\ttfamily\small] ... \end{lstlisting}.
+    constraint: >
+      NEVER make itemize or any multi-line LaTeX flow for code.
+
+content_rules:
+  math_symbols:
+    - >
+      'O-Notation', 'O(n)', 'n2', '2n', 'Omega', 'Ω', 'Theta', 'Θ' ALWAYS as LaTeX math-mode, e.g. $O(n^2)$, $\Omega(n^2)$, $\Theta(n^2)$.
+    - >
+      Replace 'n2' with 'n^2', '2n' in this context with '2^n'.
+
+special_slides:
+  title_page_detection:
+    trigger: >
+      If slide contains ONLY metadata or "title page" content.
+    action: >
+      Output an empty string or just: % Title slide skipped (handled by preamble).
+
+final_checks:
+  verification: >
+    After generating the slide, VERIFY:
+    1. Every element with geometry is ONLY inside a \placeat.
+    2. There is NO content block (image, text, table, code, math) outside of a \placeat, except title in \begin{frame}.
+    3. NEVER use itemize, enumerate, tabular, code, graphics, etc., outside placeat.
+    4. Sequence is always: frame title, sequence of placeat blocks, done.
+    5. If any rule broken: Output an ERROR or nothing, but NEVER "fallback" to wrong flow.
