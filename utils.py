@@ -142,11 +142,13 @@ def _calculate_geometry(bbox, page_width, page_height):
     rel_x = l / page_width
     rel_y = visual_top / page_height
     rel_w = width_emu / page_width
-    
+    rel_h = height_emu / page_height
+
     return {
         "x": round(max(0.0, min(1.0, rel_x)), 3),
         "y": round(max(0.0, min(1.0, rel_y)), 3),
-        "w": round(max(0.0, min(1.0, rel_w)), 3)
+        "w": round(max(0.0, min(1.0, rel_w)), 3),
+        "h": round(max(0.0, min(1.0, rel_h)), 3) 
     }
 def is_code_line(line):
     # Heuristik: erkenne Java/C-artige Zeilen
@@ -164,68 +166,137 @@ def group_elements(elements):
     grouped = []
     used = set()
     geos = build_geo_dict(elements)
+    
     for geo, group in geos.items():
-        y = group[0][1]['geometry']['y']
-        # Typischer Bereich: y < 0.03 = Header, y > 0.87 = Footer
+        # group ist eine Liste von Tupeln: [(idx, element), (idx, element), ...]
+        
+        first_el = group[0][1] 
+        y = first_el['geometry']['y']
+        
         if y < 0.03:
-            text = "\n".join(
-                el['text'] for idx, el in group if 'text' in el and idx not in used
-            )
-            grouped.append({
-                "type": "header",
-                "geometry": group[0][1]['geometry'],
-                "text": text.strip(),
-                "fontsize": "tiny",
-            })
-            for idx, el in group:
-                used.add(idx)
-            continue
-        if y > 0.87:
-            text = "\n".join(
-                el['text'] for idx, el in group if 'text' in el and idx not in used
-            )
-            grouped.append({
-                "type": "footer",
-                "geometry": group[0][1]['geometry'],
-                "text": text.strip(),
-                "fontsize": "tiny",
-            })
-            for idx, el in group:
-                used.add(idx)
-            continue
-        # CODE-BLOCK: Falls mindestens ZWEI Zeilen (oder nach Wunsch mehr) Code-Lookalike sind
-        code_like = [
-    (idx, el) for idx, el in group
-    if "text" in el and is_code_line(el['text'])
-]
-        if len(code_like) >= 2:  # oder: prozent, len(code_like) > x% von group
-            code_text = "\n".join(el['text'] for idx, el in code_like)
-            grouped.append({
-                "type": "codeblock",
-                "geometry": group[0][1]['geometry'],
-                "text": f"\\begin{{lstlisting}}[language=Java]\n{code_text}\n\\end{{lstlisting}}"
-            })
-            for idx, el in code_like:
-                used.add(idx)
-        # Rest der Gruppe ggf. als Liste/Paragraph etc.
+            header_items_with_idx = [(idx, el) for idx, el in group if 'text' in el and idx not in used]
+            if header_items_with_idx:
+                text = "\n".join(el['text'] for _, el in header_items_with_idx)
+                union_geo = get_union_geometry([el for _, el in header_items_with_idx])
+                grouped.append({
+                    "type": "header",
+                    "geometry": union_geo,
+                    "text": text.strip(),
+                    "fontsize": "3pt", 
+                })
+                for idx, _ in header_items_with_idx: used.add(idx)
+        
+        # --- FOOTER LOGIK (> 87%) ---
+        elif y > 0.87:
+            footer_items_with_idx = [(idx, el) for idx, el in group if 'text' in el and idx not in used]
+            if footer_items_with_idx:
+                text = "\n".join(el['text'] for _, el in footer_items_with_idx)
+                union_geo = get_union_geometry([el for _, el in footer_items_with_idx])
+                grouped.append({
+                    "type": "footer",
+                    "geometry": union_geo,
+                    "text": text.strip(),
+                    "fontsize": "3pt",
+                })
+                for idx, _ in footer_items_with_idx: used.add(idx)
+
+        # --- CODEBLOCK LOGIK (SICHERE VARIANTE) ---
+        sure_code_indices = sorted([
+            i for i, (idx, el) in enumerate(group)
+            if "text" in el and is_code_line(el['text'])
+        ])
+        
+        if len(sure_code_indices) >= 2:
+            # Sicherheits-Check: Wir unterteilen in Gruppen, falls eine Lücke zu groß ist
+            # (z.B. wenn mehr als 4 Nicht-Code-Zeilen dazwischen liegen)
+            blocks = []
+            current_block = [sure_code_indices[0]]
+            
+            for i in range(1, len(sure_code_indices)):
+                prev_idx = sure_code_indices[i-1]
+                curr_idx = sure_code_indices[i]
+                
+                # Wenn der Abstand größer als 4 Elemente ist -> Neuer Block
+                if curr_idx - prev_idx > 4: 
+                    blocks.append(current_block)
+                    current_block = []
+                current_block.append(curr_idx)
+            blocks.append(current_block)
+            
+            # Jetzt jeden identifizierten Block verarbeiten
+            for blk in blocks:
+                # Ein Block braucht min. 2 Zeilen (oder du erlaubst auch 1)
+                if len(blk) < 2: 
+                    continue 
+                
+                first_code_idx = blk[0]
+                last_code_idx = blk[-1]
+                
+                # Lückenfüller nur innerhalb dieses sicheren Blocks
+                code_group_subset = group[first_code_idx : last_code_idx + 1]
+                
+                code_text = "\n".join(el['text'] for idx, el in code_group_subset if 'text' in el)
+                subset_elements = [el for idx, el in code_group_subset]
+                union_geo = get_union_geometry(subset_elements)
+                
+                grouped.append({
+                    "type": "codeblock",
+                    "geometry": union_geo,
+                    "text": f"\\begin{{lstlisting}}[language=Java]\n{code_text}\n\\end{{lstlisting}}"
+                })
+                
+                for idx, el in code_group_subset:
+                    used.add(idx)
+
+        # --- LISTEN LOGIK ---
         list_like = [(idx, el) for idx, el in group if idx not in used and (
             el['type'] == "list" or el.get("label") in ("list_item", "paragraph"))]
+            
         if list_like:
-            items = [el['text'] for idx, el in list_like]
-            fontsize = "scriptsize" if len(items) > 2 else None
-            grouped.append({
-                "type": "list",
-                "geometry": group[0][1]['geometry'],
-                "items": items,
-                **({'fontsize': fontsize} if fontsize is not None else {})
-            })
-            for idx, el in list_like:
-                used.add(idx)
-        # Andere: Einzeltext, Fließtext, Bild – so belassen
+                items = [el['text'] for idx, el in list_like if 'text' in el]
+                list_elements_only = [el for idx, el in list_like]
+                union_geo = get_union_geometry(list_elements_only)
+                
+                # --- ENTSCHEIDUNGSBAUM ---
+                
+                # FALL A: Mehrere Items -> Echte Liste
+                if len(items) > 1:
+                    grouped.append({
+                        "type": "list",
+                        "geometry": union_geo,
+                        "items": items,
+                        "align": "t",
+                        "fontsize": "scriptsize" # Wie gewünscht
+                    })
+                
+                # FALL B: Ein einzelnes Item -> Text (Annotation oder Paragraph)
+                elif len(items) == 1:
+                    text_content = items[0]
+                    # Ist es kurz? (Annotation wie "+1", "*n")
+                    if len(text_content) < 20:
+                        font_sz = "tiny"
+                    # Ist es lang? (Satz/Erklärung)
+                    else:
+                        font_sz = "small"
+                        
+                    grouped.append({
+                        "type": "text",       # Zwingend Text (kein Bullet Point!)
+                        "geometry": union_geo,
+                        "text": text_content,
+                        "align": "t",
+                        "fontsize": font_sz
+                    })
+                
+                # Elemente als 'used' markieren
+                for idx, el in list_like:
+                    used.add(idx)
+
+        # --- DER REST ---
         for idx, el in group:
             if idx not in used:
                 grouped.append(el)
                 used.add(idx)
+                
     return grouped
 
 
@@ -340,3 +411,65 @@ def sanitize_latex(llm_text):
     latex = re.sub(r'\\\\item', r'\\item', latex)
 
     return latex
+
+
+def get_union_geometry(elements):
+    """
+    Berechnet die umschließende Box (Union) für eine Gruppe von Elementen.
+    Erwartet Elemente mit 'geometry': {'x', 'y', 'w', 'h'}.
+    """
+    if not elements:
+        return None
+
+    # Initialisierung mit Extremwerten
+    min_x = float('inf')
+    min_y = float('inf')
+    max_r = float('-inf') # r = x + w (Rechter Rand)
+    max_b = float('-inf') # b = y + h (Unterer Rand)
+
+    for el in elements:
+        geo = el.get('geometry', {})
+        # Überspringe Elemente ohne Geometrie
+        if not geo: 
+            continue
+            
+        x = geo.get('x', 0)
+        y = geo.get('y', 0)
+        w = geo.get('w', 0)
+        h = geo.get('h', 0)
+        
+        # Min/Max berechnen
+        min_x = min(min_x, x)
+        min_y = min(min_y, y)
+        max_r = max(max_r, x + w)
+        max_b = max(max_b, y + h)
+
+    # Die neuen Dimensionen der großen Box
+    new_w = max_r - min_x
+    new_h = max_b - min_y
+
+    return {
+        "x": round(min_x, 3),
+        "y": round(min_y, 3),
+        "w": round(new_w, 3),
+        "h": round(new_h, 3)
+    }
+
+
+
+def repair_latex_output(latex_code):
+    """
+    Repariert typische Flüchtigkeitsfehler von kleinen LLMs.
+    """
+    # 1. Fix: "\paper" statt "\paperheight"
+    # Sucht nach \paper, dem KEIN "height" oder "width" folgt
+    latex_code = re.sub(r'\\paper(?!(height|width))', r'\\paperheight', latex_code)
+    
+    # 2. Fix: "\paper]" (passiert oft in minipage definitionen)
+    latex_code = latex_code.replace(r'\paper]', r'\paperheight]')
+    
+    # 3. Fix: Fehlende schließende Klammer bei minipage (Notfall-Fix)
+    # Wenn eine Zeile mit \begin{minipage} anfängt, aber am Ende kaputt aussieht
+    # (Das ist komplexer, aber der \paper Fix löst meistens 99% der Probleme)
+    
+    return latex_code

@@ -4,6 +4,8 @@ import re
 import yaml 
 from pathlib import Path
 
+from utils import repair_latex_output
+
 def extract_latex_content(text):
     """Entfernt Markdown ```latex Wrapper"""
     pattern = r"```(?:latex)?\s*(.*?)\s*```"
@@ -14,74 +16,139 @@ def extract_latex_content(text):
        
 def load_conversion_rules():
     return r"""
-IMPORTANT RULES. STRICTLY FOLLOW, NO EXCEPTIONS!
+You are a specialized LaTeX Beamer Generator.
+You convert a provided JSON structure of a presentation slide into valid, compilable LaTeX code using the 'textpos' package for absolute positioning.
 
-- Output LaTeX for a SINGLE slide. Start with \begin{frame}[fragile] (if there is a codeblock; else just \begin{frame}), end with \end{frame}.
-- DO NOT use a frame title argument (no \begin{frame}{...}).
-- For each element with a geometry field, create exactly one \begin{textblock}{WIDTH}(X, Y) ... \end{textblock}.
-- WIDTH, X, Y are decimal fractions from the geometry field ("w", "x", "y").
-- All content (text, lists, code, images, tables) must be INSIDE their respective textblock, with no wrapper outside.
-- NEVER use itemize, tabular, images, code, or math outside a textblock. NEVER nest textblocks.
+INPUT DATA:
+You receive a JSON object representing a SINGLE slide with a list of "elements".
+Each element contains:
+- "type": (text, list, codeblock, table, picture, header, footer, etc.)
+- "geometry": { "x", "y", "w", "h" } (Normalized coordinates 0.0-1.0)
+- Content fields: "text", "items", "table_rows", "image_path", etc.
 
-SPECIAL CASES:
-- For the title ("type": "title"): Always output as the FIRST textblock, using its geometry, as \textbf{...} (bold). DO NOT set a frame title argument.
-- If there is a codeblock, add [fragile] to \begin{frame}, e.g. \begin{frame}[fragile]. If none, use \begin{frame} only.
-- For a "list": single item → output as plain text within the textblock (no bullet). Multiple items → use \begin{itemize}...\end{itemize} (inside the textblock).
-- For "codeblock": output a single textblock with \begin{lstlisting}...\end{lstlisting}.
-- For "table": inside the textblock, wrap the tabular inside \resizebox{\textwidth}{!}{...}.
-- For "picture": use \includegraphics[width=\textwidth]{...} inside the textblock.
-- If an element contains a field "fontsize" (e.g., "fontsize": "scriptsize"), wrap the entire content inside the textblock in curly braces with the respective LaTeX font size command, e.g. {\scriptsize ... }. This must come immediately inside the textblock, before the content, and end after the content.
+OUTPUT FORMAT RULES (STRICTLY FOLLOW):
+1. **Frame Structure:**
+   - Start with `\begin{frame}[fragile]`. End with `\end{frame}`.
+   - NO frame title argument.
 
-EXAMPLE INPUT:
-[
-  {"type":"list", "geometry":{"x":0.2,"y":0.15,"w":0.7}, "items":["a","b","c","d","e","f","g","h","i","j","k"], "fontsize":"scriptsize"},
-  {"type":"title","text":"Mein Titel","geometry":{"x":0.1,"y":0.05,"w":0.6}},
-  {"type":"text","text":"Hallo!","geometry":{"x":0.2,"y":0.1,"w":0.5}},
-  {"type":"list", "items":["Foo","Bar"],"geometry":{"x":0.5,"y":0.2,"w":0.4}},
-  {"type":"codeblock", "text":"int i = 0;\ni++;","geometry":{"x":0.3,"y":0.5,"w":0.2}},
-  {"type":"table", "text":"<full tabular LaTeX>", "geometry":{"x":0.1,"y":0.10,"w":0.7}}
-]
+2. **Positioning (The Container):**
+   - For EACH element, generate a textblock: `\begin{textblock}{<w>}(<x>, <y>) ... \end{textblock}`.
+    - If "fontsize" is "3pt": Write exactly \fontsize{3}{3.3}\selectfont before the text.
+3. **Content Layout (The Inner Box):**
+   - Inside EVERY textblock, wrap content in a minipage.
+   - Syntax:
+     ```latex
+     \begin{minipage}[<ALIGN>][<h>\paperheight]{\linewidth}
+        <CONTENT>
+     \end{minipage}
+     ```
+   - **CRITICAL: ALIGNMENT LOGIC (<ALIGN>):**
+     - **"table", "list", "picture", "codeblock"**: ALWAYS use **[t]** (Top).
+       *Explanation: Even if the geometry height (h) is large, the content must start at the top (y).*
+     - **"text"**: Use **[t]** (Top) by default. Only use **[b]** if the element is strictly a label at the bottom of its box.
+     - **"title", "header"**: Use **[b]** (Bottom) or **[c]** (Center).
+     - **"footer"**: ALWAYS use **[b]** (Bottom) AND add `\raggedright`.
 
-EXAMPLE OUTPUT:
-\begin{frame}[fragile]
-\begin{textblock}{0.2}(0.2, 0.15)
-{\scriptsize
-\begin{itemize}
-\item a
-\item b
-...
-\item k
-\end{itemize}
+4. **Element-Specific Rendering:**
+   - **"title", "header", "text"**: Output text. Use `\textbf{...}` for titles.
+   - **"list"**: `\begin{itemize} \item ... \end{itemize}`. Single item -> plain text (no bullet).
+   - **"codeblock"**: `\begin{lstlisting}[language=Java, basicstyle=\ttfamily\scriptsize] ... \end{lstlisting}`.
+   - **"table"**:
+     - Generate a standard `tabular`.
+     - **IMPORTANT:** Wrap the tabular inside `\resizebox{\linewidth}{!}{ ... }` to fit width.
+   - **"picture"**: `\includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{...}`.
+   - **Fontsize**: If "fontsize" exists, apply it INSTANTLY inside the minipage (e.g., `{\tiny ...}`).
+
+5. **Sanitization:**
+   - Escape special LaTeX chars (%, &, $, #, _) in text, but NOT in codeblocks or math ($...$).
+EXAMPLES:
+
+Input 1 (Footer - requires [b] and \raggedright):
+{
+  "type": "footer",
+  "geometry": {"x": 0.56, "y": 0.90, "w": 0.23, "h": 0.03},
+  "text": "Quelle: University of Washington",
+  "fontsize": "tiny"
 }
-\end{textblock}
-\begin{textblock}{0.6}(0.1, 0.05)
-\textbf{Mein Titel}
-\end{textblock}
-\begin{textblock}{0.5}(0.2, 0.1)
-Hallo!
-\end{textblock}
-\begin{textblock}{0.4}(0.5, 0.2)
-\begin{itemize}
-\item Foo
-\item Bar
-\end{itemize}
-\end{textblock}
-\begin{textblock}{0.2}(0.3, 0.5)
-\begin{lstlisting}
-int i = 0;
-i++;
-\end{lstlisting}
-\end{textblock}
-\begin{textblock}{0.7}(0.1, 0.10)
-\resizebox{\textwidth}{!}{%
-<full tabular LaTeX>
-}
-\end{textblock}
-\end{frame}
 
-NO frame title argument, only textblock for title!
-Geometry must be used EXACTLY as given.
-If these rules are not followed, the output is invalid.
+Output 1:
+\begin{textblock}{0.23}(0.56, 0.90)
+  \begin{minipage}[b][0.03\paperheight]{\linewidth}
+    \raggedright
+    {\tiny Quelle: University of Washington}
+  \end{minipage}
+\end{textblock}
+
+
+Input 2 (List - [t] or [b]):
+{
+  "type": "list",
+  "geometry": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.6},
+  "items": ["Point A", "Point B"],
+  "fontsize": "scriptsize"
+}
+
+Output 2:
+\begin{textblock}{0.8}(0.1, 0.2)
+  \begin{minipage}[t][0.6\paperheight]{\linewidth}
+    {\scriptsize
+    \begin{itemize}
+      \item Point A
+      \item Point B
+    \end{itemize}
+    }
+  \end{minipage}
+\end{textblock}
+
+
+Input 3 (Title - [t]):
+{
+  "type": "title",
+  "geometry": {"x": 0.1, "y": 0.05, "w": 0.8, "h": 0.1},
+  "text": "My Presentation Title"
+}
+
+Output 3:
+\begin{textblock}{0.8}(0.1, 0.05)
+  \begin{minipage}[t][0.1\paperheight]{\linewidth}
+    \textbf{My Presentation Title}
+  \end{minipage}
+\end{textblock}
+
+
+Input 4 (Table - requires [t] and resizebox):
+{
+  "type": "table",
+  "geometry": {"x": 0.1, "y": 0.3, "w": 0.5, "h": 0.4},
+  "table_rows": [["Col1", "Col2"], ["Val1", "Val2"]]
+}
+
+Output 4:
+\begin{textblock}{0.5}(0.1, 0.3)
+  \begin{minipage}[t][0.4\paperheight]{\linewidth}
+    \resizebox{\linewidth}{!}{
+      \begin{tabular}{|l|l|}
+        Col1 & Col2 \\
+        Val1 & Val2 \\
+      \end{tabular}
+    }
+  \end{minipage}
+\end{textblock}
+Input 5 (Footer/Header with fixed 3pt font size):
+{
+  "type": "footer",
+  "geometry": {"x": 0.56, "y": 0.90, "w": 0.23, "h": 0.03},
+  "text": "Quelle: University of Washington",
+  "fontsize": "3pt"
+}
+
+Output 5:
+\begin{textblock}{0.23}(0.56, 0.90)
+  \begin{minipage}[b][0.03\paperheight]{\linewidth}
+    \raggedright
+    \fontsize{3}{3.3}\selectfont Quelle: University of Washington
+  \end{minipage}
+\end{textblock}
 """
 
 # --- 2. WORKER FUNKTION ---
@@ -116,6 +183,7 @@ def generate_single_slide_latex(slide_data, config):
     try:
         response = ollama.chat(model=config.AGENT_LLM_MODEL, messages=messages)
         content = response['message']['content']
+        content = repair_latex_output(content)
         return extract_latex_content(content)
     except Exception as e:
         print(f"Error generating Slide {slide_num}: {e}")
