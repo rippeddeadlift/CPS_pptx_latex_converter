@@ -79,19 +79,41 @@ Output 1:
   \end{minipage}
 \end{textblock}
 
-
-Input 2 (List - [t] or [b]):
+Input 2 (List - [b]):
 {
   "type": "list",
   "geometry": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.6},
   "items": ["Point A", "Point B"],
-  "fontsize": "scriptsize"
+  "align": "b",
+  "fontsize": "small"
 }
 
 Output 2:
 \begin{textblock}{0.8}(0.1, 0.2)
+  % WICHTIG: [b] sorgt hier dafür, dass der Text am unteren Rand der Box klebt
+  \begin{minipage}[b][0.6\paperheight]{\linewidth}
+    {\small
+    \begin{itemize}
+      \item Summary Point 1
+      \item Summary Point 2
+    \end{itemize}
+    }
+  \end{minipage}
+\end{textblock}
+
+Input 2.5 (List - [t]):
+{
+  "type": "list",
+  "geometry": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.6},
+  "items": ["Point A", "Point B"],
+  "align": "t",
+  "fontsize": "small"
+}
+
+Output 2.5:
+\begin{textblock}{0.8}(0.1, 0.2)
   \begin{minipage}[t][0.6\paperheight]{\linewidth}
-    {\scriptsize
+    {\small
     \begin{itemize}
       \item Point A
       \item Point B
@@ -99,7 +121,6 @@ Output 2:
     }
   \end{minipage}
 \end{textblock}
-
 
 Input 3 (Title - [t]):
 {
@@ -162,7 +183,7 @@ def generate_single_slide_latex(slide_data, config):
     # System Prompt
     system_prompt = (
         "You are a strictly constrained LaTeX Beamer generator. "
-        "You do not speak. You do not explain. You only output code."
+        "You do not explain. You only output code."
     )
 
     # User Prompt
