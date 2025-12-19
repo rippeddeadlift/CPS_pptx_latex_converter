@@ -22,7 +22,8 @@ def simplify_table_data(table_item: Dict[str, Any]) -> List[List[str]]:
             simple_rows.append(simple_row)
     return simple_rows
 
-def transform_docling_json_to_slides(raw_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+def transform_docling_json_to_slides(raw_data: Dict[str, Any], alignment_map=None) -> List[Dict[str, Any]]:
+    if alignment_map is None: alignment_map = {}
     # 1. Choose Data Source
     if "structure_analysis" in raw_data:
         source_data = raw_data["structure_analysis"]
@@ -51,13 +52,41 @@ def transform_docling_json_to_slides(raw_data: Dict[str, Any]) -> List[Dict[str,
                 
                 # Create Element
                 element = {
-                    "type": key[:-1], # texts -> text
+                    "type": key[:-1], 
                     "label": item.get("label", "unknown"),
                     "bbox": {k: int(v) for k, v in provs[0].get("bbox", {}).items() if isinstance(v, (int, float))}
                 }
                 
+                # Inhalt zuweisen
                 if "text" in item: 
                     element["text"] = item["text"].strip()
+                
+                # Falls es eine Liste ist, Items übernehmen
+                if "items" in item:
+                    element["items"] = item["items"]
+
+                # ---------------------------------------------------------
+                # ### NEU: ALIGNMENT MARKIERUNG (Aus Map lesen) ###
+                # ---------------------------------------------------------
+                check_text = ""
+                
+                # A) Text Element
+                if element.get("text"):
+                    check_text = element["text"]
+                # B) Listen Element (Suche erstes nicht-leeres Item)
+                elif element.get("items"):
+                    for it in element["items"]:
+                        if isinstance(it, str) and it.strip():
+                            check_text = it
+                            break
+                
+                # Abgleich mit der Map aus main.py
+                if check_text and page_no in alignment_map:
+                    # Normalisieren: Alles klein, keine Leerzeichen
+                    lookup_key = "".join(check_text.split()).lower()[:50]
+                    
+                    if lookup_key in alignment_map[page_no]:
+                        element["align"] = "b" 
                 
                 if key == "tables": 
                     element["table_rows"] = simplify_table_data(item)
@@ -68,6 +97,7 @@ def transform_docling_json_to_slides(raw_data: Dict[str, Any]) -> List[Dict[str,
                     global_image_counter += 1
                 
                 slides_buckets[page_no].append(element)
+                
 
     # Build Final List
     final_slides = []
@@ -79,27 +109,8 @@ def transform_docling_json_to_slides(raw_data: Dict[str, Any]) -> List[Dict[str,
         
         slide_obj = {
             "slide_number": page_num,
-            "elements": sorted_items # Keep elements as is (LLM handles rest)
+            "elements": sorted_items 
         }
         final_slides.append(slide_obj)
         
     return final_slides
-
-# def is_generic_noise(text_content: str) -> bool:
-#     """
-#     Detects Date, Page Numbers, and specific footer noise.
-#     Returns True if the text should be deleted.
-#     """
-#     text = text_content.strip()
-    
-#     # 1. Date (dd.mm.yyyy or yyyy-mm-dd)
-#     if re.match(r'^\d{2}\.\d{2}\.\d{4}$', text): return True
-#     if re.match(r'^\d{4}-\d{2}-\d{2}$', text): return True
-        
-#     # 2. Page Numbers & Footer Digits
-#     # Matches "Seite 5", "Page 5", "5/20", or just "5"
-#     if re.match(r'^(Seite|Page)\s+\d+$', text, re.IGNORECASE): return True
-#     if re.match(r'^\d+\s*/\s*\d+$', text): return True 
-#     if re.match(r'^\d+$', text): return True 
-    
-#     return False

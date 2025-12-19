@@ -168,130 +168,110 @@ def group_elements(elements):
     geos = build_geo_dict(elements)
     
     for geo, group in geos.items():
-        # group ist eine Liste von Tupeln: [(idx, element), (idx, element), ...]
-        
         first_el = group[0][1] 
         y = first_el['geometry']['y']
         
         if y < 0.03:
-            header_items_with_idx = [(idx, el) for idx, el in group if 'text' in el and idx not in used]
-            if header_items_with_idx:
-                text = "\n".join(el['text'] for _, el in header_items_with_idx)
-                union_geo = get_union_geometry([el for _, el in header_items_with_idx])
+            items = [(idx, el) for idx, el in group if 'text' in el and idx not in used]
+            if items:
+                text = "\n".join(el['text'] for _, el in items)
                 grouped.append({
                     "type": "header",
-                    "geometry": union_geo,
+                    "geometry": get_union_geometry([el for _, el in items]),
                     "text": text.strip(),
                     "fontsize": "3pt", 
                 })
-                for idx, _ in header_items_with_idx: used.add(idx)
+                for idx, _ in items: used.add(idx)
         
-        # --- FOOTER LOGIK (> 87%) ---
+
         elif y > 0.87:
-            footer_items_with_idx = [(idx, el) for idx, el in group if 'text' in el and idx not in used]
-            if footer_items_with_idx:
-                text = "\n".join(el['text'] for _, el in footer_items_with_idx)
-                union_geo = get_union_geometry([el for _, el in footer_items_with_idx])
+            items = [(idx, el) for idx, el in group if 'text' in el and idx not in used]
+            if items:
+                text = "\n".join(el['text'] for _, el in items)
                 grouped.append({
                     "type": "footer",
-                    "geometry": union_geo,
+                    "geometry": get_union_geometry([el for _, el in items]),
                     "text": text.strip(),
                     "fontsize": "3pt",
                 })
-                for idx, _ in footer_items_with_idx: used.add(idx)
+                for idx, _ in items: used.add(idx)
 
-        # --- CODEBLOCK LOGIK (SICHERE VARIANTE) ---
         sure_code_indices = sorted([
             i for i, (idx, el) in enumerate(group)
             if "text" in el and is_code_line(el['text'])
         ])
         
         if len(sure_code_indices) >= 2:
-            # Sicherheits-Check: Wir unterteilen in Gruppen, falls eine Lücke zu groß ist
-            # (z.B. wenn mehr als 4 Nicht-Code-Zeilen dazwischen liegen)
             blocks = []
             current_block = [sure_code_indices[0]]
-            
             for i in range(1, len(sure_code_indices)):
-                prev_idx = sure_code_indices[i-1]
-                curr_idx = sure_code_indices[i]
-                
-                # Wenn der Abstand größer als 4 Elemente ist -> Neuer Block
-                if curr_idx - prev_idx > 4: 
+                if sure_code_indices[i] - sure_code_indices[i-1] > 4: 
                     blocks.append(current_block)
                     current_block = []
-                current_block.append(curr_idx)
+                current_block.append(sure_code_indices[i])
             blocks.append(current_block)
             
-            # Jetzt jeden identifizierten Block verarbeiten
             for blk in blocks:
-                # Ein Block braucht min. 2 Zeilen (oder du erlaubst auch 1)
-                if len(blk) < 2: 
-                    continue 
+                if len(blk) < 2: continue
                 
-                first_code_idx = blk[0]
-                last_code_idx = blk[-1]
-                
-                # Lückenfüller nur innerhalb dieses sicheren Blocks
-                code_group_subset = group[first_code_idx : last_code_idx + 1]
-                
-                code_text = "\n".join(el['text'] for idx, el in code_group_subset if 'text' in el)
-                subset_elements = [el for idx, el in code_group_subset]
-                union_geo = get_union_geometry(subset_elements)
+                subset = group[blk[0] : blk[-1] + 1]
+                code_text = "\n".join(el['text'] for idx, el in subset if 'text' in el)
+                union_geo = get_union_geometry([el for idx, el in subset])
                 
                 grouped.append({
                     "type": "codeblock",
                     "geometry": union_geo,
                     "text": f"\\begin{{lstlisting}}[language=Java]\n{code_text}\n\\end{{lstlisting}}"
                 })
-                
-                for idx, el in code_group_subset:
-                    used.add(idx)
+                for idx, el in subset: used.add(idx)
 
-        # --- LISTEN LOGIK ---
+
         list_like = [(idx, el) for idx, el in group if idx not in used and (
-            el['type'] == "list" or el.get("label") in ("list_item", "paragraph"))]
+            el['type'] == "list" or el.get("label") in ("list_item", "paragraph", "text"))]
             
         if list_like:
+                group_align = "t"
+                for _, el in list_like:
+                    if el.get("align") == "b":
+                        group_align = "b"
+                        break
+
                 items = [el['text'] for idx, el in list_like if 'text' in el]
-                list_elements_only = [el for idx, el in list_like]
-                union_geo = get_union_geometry(list_elements_only)
+                union_geo = get_union_geometry([el for idx, el in list_like])
                 
-                # --- ENTSCHEIDUNGSBAUM ---
+               
+                is_list = False
                 
-                # FALL A: Mehrere Items -> Echte Liste
-                if len(items) > 1:
+                if len(items) >= 3:
+                    if len(items) > 4:
+                        is_list = True
+                    elif all(len(i) > 20 for i in items):
+                        is_list = True
+
+                if is_list:
                     grouped.append({
                         "type": "list",
                         "geometry": union_geo,
                         "items": items,
-                        "align": "t",
-                        "fontsize": "scriptsize" # Wie gewünscht
+                        "align": group_align, 
+                        "fontsize": "scriptsize"
                     })
                 
-                # FALL B: Ein einzelnes Item -> Text (Annotation oder Paragraph)
-                elif len(items) == 1:
-                    text_content = items[0]
-                    # Ist es kurz? (Annotation wie "+1", "*n")
-                    if len(text_content) < 20:
-                        font_sz = "tiny"
-                    # Ist es lang? (Satz/Erklärung)
-                    else:
-                        font_sz = "small"
+                else:
+                    full_text = "\n".join(items)
+                    
+                    font_sz = "tiny" if len(full_text) < 20 else "small"
                         
                     grouped.append({
-                        "type": "text",       # Zwingend Text (kein Bullet Point!)
+                        "type": "text", 
                         "geometry": union_geo,
-                        "text": text_content,
-                        "align": "t",
+                        "text": full_text, 
+                        "align": group_align, 
                         "fontsize": font_sz
                     })
                 
-                # Elemente als 'used' markieren
-                for idx, el in list_like:
-                    used.add(idx)
+                for idx, el in list_like: used.add(idx)
 
-        # --- DER REST ---
         for idx, el in group:
             if idx not in used:
                 grouped.append(el)

@@ -23,7 +23,6 @@ def generate_latex_preamble(metadata, detected_header=None):
 \usepackage{{listings}}
 \usepackage{{xcolor}}
 \usepackage{{textgreek}}
-\usepackage{{tikz}}
 \usepackage[absolute, overlay]{{textpos}}
 \usepackage{{hyperref}}
 \setlength{{\TPHorizModule}}{{\paperwidth}}

@@ -1,4 +1,5 @@
 import json
+from allignment import get_vertical_alignment_map
 from generator import LATEX_POSTAMBLE,generate_latex_preamble
 from converters.JSON_into_LaTeX_agent import generate_single_slide_latex
 from converters.pptx_into_JSON import convert_pptx_to_json
@@ -52,8 +53,10 @@ def step_process_and_optimize_data(config):
         with open(input_path, 'r', encoding='utf-8') as f:
             raw_data = json.load(f)
             
-        print("Grouping and sorting slides by layout...")
-        slides_data = transform_docling_json_to_slides(raw_data)
+        print("Scanning PPTX for layout overrides...")
+        align_map = get_vertical_alignment_map(str(config.PPTX_INPUT))
+        print("align_map:", align_map)
+        slides_data = transform_docling_json_to_slides(raw_data, align_map)
         
         print(f"Saving {len(slides_data)} slides to: {output_path}")
         with open(output_path, 'w', encoding='utf-8') as f:
