@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
@@ -12,25 +13,20 @@ def extract_media_from_pptx(pptx_path, output_dir):
     slide_height = prs.slide_height
 
     layout_data_by_slide = {}
-    
-    # We use a mutable counter to keep filenames unique across all slides
-    global_image_count = 1 
+    global_media_count = 1 
 
-    print(f"   -> Mining {len(prs.slides)} slides for hidden media...")
+    print(f"   -> Scanning {len(prs.slides)} slides for video/media...")
 
     for i, slide in enumerate(prs.slides):
         slide_index = i
         slide_media = []
         
-        # We start the recursion here
+        # Das ist der Schlüssel: Wir laden alle Beziehungen der Folie einmal
+        rels = slide.part.rels
+
         for shape in slide.shapes:
-            global_image_count = _process_shape_recursive(
-                shape, 
-                slide_media, 
-                output_dir, 
-                global_image_count,
-                slide_width, 
-                slide_height
+            global_media_count = _process_shape(
+                shape, rels, slide_media, output_dir, global_media_count, slide_width, slide_height
             )
 
         if slide_media:
@@ -39,78 +35,135 @@ def extract_media_from_pptx(pptx_path, output_dir):
 
     return layout_data_by_slide
 
-def _process_shape_recursive(shape, slide_media, output_dir, count, s_width, s_height):
-    """
-    Recursively inspects shapes.
-    - If Group: inspects children.
-    - If Picture: saves it.
-    """
+def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_height):
     
-    # CASE 1: GROUP (The logic we were missing!)
+    # 1. GRUPPEN
     if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
-        for child_shape in shape.shapes:
-            count = _process_shape_recursive(child_shape, slide_media, output_dir, count, s_width, s_height)
+        for child in shape.shapes:
+            count = _process_shape(child, rels, slide_media, output_dir, count, s_width, s_height)
         return count
 
-    # CASE 2: PICTURE (Standard images)
+    # 2. VIDEO CHECK (Brute Force)
+    xml_text = shape.element.xml
+    rids = re.findall(r'r:embed="([^"]+)"', xml_text) + \
+           re.findall(r'r:link="([^"]+)"', xml_text)
+
+    for rid in rids:
+        if rid in rels:
+            rel = rels[rid]
+            try:
+                if rel.is_external: continue
+                
+                part = rel.target_part
+                ctype = part.content_type.lower()
+
+                if ctype.startswith('video/') or ctype in ['application/x-mplayer2']:
+                    # --- A. VIDEO SPEICHERN ---
+                    ext = "mp4"
+                    if "wmv" in ctype: ext = "wmv"
+                    elif "avi" in ctype: ext = "avi"
+                    elif "quicktime" in ctype: ext = "mov"
+                    
+                    video_filename = f"media_{count}.{ext}"
+                    video_filepath = os.path.join(output_dir, video_filename)
+                    
+                    with open(video_filepath, "wb") as f:
+                        f.write(part.blob)
+                    
+                    # --- B. POSTER (VORSCHAUBILD) SPEICHERN ---
+                    # Das ist der neue Teil! Wir versuchen das Bild des Shapes zu holen.
+                    poster_path_json = ""
+                    try:
+                        # Fast jedes Video-Shape hat auch ein .image Attribut (das Poster)
+                        if hasattr(shape, "image"):
+                            img = shape.image
+                            img_ext = img.ext
+                            poster_filename = f"media_{count}_poster.{img_ext}"
+                            poster_filepath = os.path.join(output_dir, poster_filename)
+                            
+                            with open(poster_filepath, "wb") as f_img:
+                                f_img.write(img.blob)
+                            
+                            # Pfad für JSON vorbereiten
+                            parent_folder = Path(poster_filepath).parent.name
+                            poster_path_json = f"{parent_folder}/{poster_filename}"
+                            print(f"      [POSTER] Saved preview image: {poster_filename}")
+                    except Exception as e:
+                        print(f"      [INFO] No poster image extracted: {e}")
+
+                    print(f"      [HIT] Video found: {video_filename}")
+                    
+                    # --- C. DATEN ZUSAMMENFÜGEN ---
+                    # Wir fügen 'poster_path' zum JSON hinzu
+                    relative_folder = Path(video_filepath).parent.name
+                    video_json_path = f"{relative_folder}/{video_filename}"
+                    
+                    left = shape.left / s_width
+                    top = shape.top / s_height
+                    width = shape.width / s_width
+                    height = shape.height / s_height
+
+                    slide_media.append({
+                        "type": "video",
+                        "filename": video_filename,
+                        "path": video_json_path,
+                        "poster_path": poster_path_json, # <--- HIER IST ES DRIN
+                        "geometry": {
+                            "x": round(left, 3), "y": round(top, 3),
+                            "w": round(width, 3), "h": round(height, 3)
+                        }
+                    })
+                    return count + 1
+
+            except Exception as e:
+                continue
+
+    # 3. NORMALES BILD (Fallback)
     if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
         return _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height)
 
-    # CASE 3: PICTURE PLACEHOLDER
     if shape.shape_type == MSO_SHAPE_TYPE.PLACEHOLDER:
-        if hasattr(shape, 'image') and shape.image:
+         if hasattr(shape, 'image') and shape.image:
             return _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height)
-
-    # CASE 4: SHAPES WITH PICTURE FILL (Advanced/Optional)
-    # Some "Rectangles" are actually photos. This tries to catch them.
-    if shape.shape_type == MSO_SHAPE_TYPE.AUTO_SHAPE:
-        try:
-            # Type 6 is 'Picture Fill'
-            if shape.fill.type == 6:
-                # Accessing the image from a fill is tricky but this often works
-                if hasattr(shape.fill, 'fore_color') and hasattr(shape.fill.fore_color, 'type'):
-                     # We can't easily extract the blob from a Fill in python-pptx without deep hacking
-                     # So we skip saving the file, but we acknowledge it existed.
-                     pass 
-        except:
-            pass
-
+            
     return count
 
 def _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height):
     try:
-        # 1. Get Image Data
         image = shape.image
         ext = image.ext
         filename = f"image_{count}.{ext}"
-        
-        # 2. Save File to Disk (Absolute Path from Config)
-        # output_dir comes from config.MEDIA_OUTPUT_DIR
         filepath = os.path.join(output_dir, filename)
         
         with open(filepath, "wb") as f:
             f.write(image.blob)
-            
-        # 3. Generate Relative Path for LaTeX (The Fix)
-        # We extract "extracted_media" dynamically from the path provided
-        # This makes it 100% sync'd with your Config
-        relative_folder_name = Path(output_dir).name 
-        json_relative_path = f"{relative_folder_name}/{filename}"
-            
-        # 4. Geometry Calculation
-        left = shape.left / s_width
-        top = shape.top / s_height
-        width = shape.width / s_width
-        height = shape.height / s_height
         
-        # 5. Append to List
-        slide_media.append({
-            "filename": filename,
-            "path": json_relative_path, # e.g. "extracted_media/image_1.png"
-            "geometry": [left, top, width, height]
-        })
-        
+        _append_to_list(slide_media, "picture", filename, filepath, shape, s_width, s_height)
         return count + 1
-    except Exception as e:
-        print(f"      Warning: Could not extract image {count}: {e}")
+    except:
         return count
+
+def _append_to_list(slide_media, type_name, filename, full_path, shape, s_width, s_height):
+    relative_folder_name = Path(full_path).parent.name 
+    json_relative_path = f"{relative_folder_name}/{filename}"
+    
+    left = shape.left / s_width
+    top = shape.top / s_height
+    width = shape.width / s_width
+    height = shape.height / s_height
+    # --- DEBUG PRINT ANFANG ---
+    print(f"      🔍 [GEOMETRY CHECK] '{filename}'")
+    print(f"          -> X: {left:.3f} ({(left*100):.1f}%) | Y: {top:.3f} ({(top*100):.1f}%)")
+    print(f"          -> W: {width:.3f} ({(width*100):.1f}%) | H: {height:.3f} ({(height*100):.1f}%)")
+    # --- DEBUG PRINT ENDE ---
+    slide_media.append({
+        "type": type_name,
+        "filename": filename,
+        "path": json_relative_path,
+        "geometry": {
+            "x": round(left, 3),
+            "y": round(top, 3),
+            "w": round(width, 3),
+            "h": round(height, 3)
+        }
+    })
