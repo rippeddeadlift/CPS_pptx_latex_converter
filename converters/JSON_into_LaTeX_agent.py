@@ -22,9 +22,9 @@ You convert a provided JSON structure of a presentation slide into valid, compil
 INPUT DATA:
 You receive a JSON object representing a SINGLE slide with a list of "elements".
 Each element contains:
-- "type": (text, list, codeblock, table, picture, header, footer, etc.)
+- "type": (text, list, codeblock, table, picture, video, header, footer, etc.)
 - "geometry": { "x", "y", "w", "h" } (Normalized coordinates 0.0-1.0)
-- Content fields: "text", "items", "table_rows", "image_path", etc.
+- Content fields: "text", "items", "table_rows", "image_path", "path", etc.
 
 OUTPUT FORMAT RULES (STRICTLY FOLLOW):
 1. **Frame Structure:**
@@ -43,7 +43,7 @@ OUTPUT FORMAT RULES (STRICTLY FOLLOW):
      \end{minipage}
      ```
    - **CRITICAL: ALIGNMENT LOGIC (<ALIGN>):**
-     - **"table", "list", "picture", "codeblock"**: ALWAYS use **[t]** (Top).
+     - **"table", "list", "picture", "codeblock", "video"**: ALWAYS use **[t]** (Top).
        *Explanation: Even if the geometry height (h) is large, the content must start at the top (y).*
      - **"text"**: Use **[t]** (Top) by default. Only use **[b]** if the element is strictly a label at the bottom of its box.
      - **"title", "header"**: Use **[b]** (Bottom) or **[c]** (Center).
@@ -57,6 +57,11 @@ OUTPUT FORMAT RULES (STRICTLY FOLLOW):
      - Generate a standard `tabular`.
      - **IMPORTANT:** Wrap the tabular inside `\resizebox{\linewidth}{!}{ ... }` to fit width.
    - **"picture"**: `\includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{...}`.
+- **"video"**:
+     - Generate exactly: 
+       `\includemedia[width=\linewidth, height=\textheight, activate=pageopen, addresource=<path>, flashvars={source=<path> &autoPlay=true &loop=true}]{\includegraphics[width=\linewidth,height=\textheight]{<poster_path>}}{VPlayer.swf}`
+     - **IMPORTANT:** 1. Use `path` for `addresource` and `flashvars`.
+       2. Use `poster_path` inside `\includegraphics`. 
    - **Fontsize**: If "fontsize" exists, apply it INSTANTLY inside the minipage (e.g., `{\tiny ...}`).
 
 5. **Sanitization:**
@@ -101,7 +106,7 @@ Output 2:
   \end{minipage}
 \end{textblock}
 
-Input 2.5 (List - [t]):
+Input 3 (List - [t]):
 {
   "type": "list",
   "geometry": {"x": 0.1, "y": 0.2, "w": 0.8, "h": 0.6},
@@ -110,7 +115,7 @@ Input 2.5 (List - [t]):
   "fontsize": "small"
 }
 
-Output 2.5:
+Output 3:
 \begin{textblock}{0.8}(0.1, 0.2)
   \begin{minipage}[t][0.6\paperheight]{\linewidth}
     {\small
@@ -122,14 +127,14 @@ Output 2.5:
   \end{minipage}
 \end{textblock}
 
-Input 3 (Title - [t]):
+Input 4 (Title - [t]):
 {
   "type": "title",
   "geometry": {"x": 0.1, "y": 0.05, "w": 0.8, "h": 0.1},
   "text": "My Presentation Title"
 }
 
-Output 3:
+Output 4:
 \begin{textblock}{0.8}(0.1, 0.05)
   \begin{minipage}[t][0.1\paperheight]{\linewidth}
     \textbf{My Presentation Title}
@@ -137,14 +142,14 @@ Output 3:
 \end{textblock}
 
 
-Input 4 (Table - requires [t] and resizebox):
+Input 5 (Table - requires [t] and resizebox):
 {
   "type": "table",
   "geometry": {"x": 0.1, "y": 0.3, "w": 0.5, "h": 0.4},
   "table_rows": [["Col1", "Col2"], ["Val1", "Val2"]]
 }
 
-Output 4:
+Output 5:
 \begin{textblock}{0.5}(0.1, 0.3)
   \begin{minipage}[t][0.4\paperheight]{\linewidth}
     \resizebox{\linewidth}{!}{
@@ -155,7 +160,7 @@ Output 4:
     }
   \end{minipage}
 \end{textblock}
-Input 5 (Footer/Header with fixed 3pt font size):
+Input 6 (Footer/Header with fixed 3pt font size):
 {
   "type": "footer",
   "geometry": {"x": 0.56, "y": 0.90, "w": 0.23, "h": 0.03},
@@ -163,30 +168,69 @@ Input 5 (Footer/Header with fixed 3pt font size):
   "fontsize": "3pt"
 }
 
-Output 5:
+Output 6:
 \begin{textblock}{0.23}(0.56, 0.90)
   \begin{minipage}[b][0.03\paperheight]{\linewidth}
     \raggedright
     \fontsize{3}{3.3}\selectfont Quelle: University of Washington
   \end{minipage}
 \end{textblock}
+
+Input 7 (Codeblock):
+{
+  "type": "codeblock",
+  "geometry": {"x": 0.1, "y": 0.4, "w": 0.8, "h": 0.3},
+  "text": "\\begin{lstlisting}[language=Java]\nfor (i = 0; i < n; i++) {\na[i] = 1;\nb[i] = 2;\n}\n\\end{lstlisting}"
+}
+
+Output 7:
+\begin{textblock}{0.8}(0.1, 0.4)
+  \begin{minipage}[t][0.3\paperheight]{\linewidth}
+    \begin{lstlisting}[language=Java, basicstyle=\ttfamily\scriptsize]
+for (i = 0; i < n; i++) {
+a[i] = 1;
+b[i] = 2;
+}
+    \end{lstlisting}
+  \end{minipage}
+\end{textblock}
+
+Input 8 (Video with Poster):
+{
+  "type": "video",
+  "geometry": {"x": 0.2, "y": 0.2, "w": 0.6, "h": 0.4},
+  "path": "extracted_media/video.mp4",
+  "poster_path": "extracted_media/video_poster.png"
+}
+
+Output 8:
+\begin{textblock}{0.6}(0.2, 0.2)
+  \begin{minipage}[t][0.4\paperheight]{\linewidth}
+    \includemedia[
+       width=\linewidth, 
+       height=0.4\paperheight,
+       activate=pageopen, 
+       addresource=extracted_media/video.mp4, 
+       flashvars={
+          source=extracted_media/video.mp4 
+          &autoPlay=true 
+          &loop=true
+       }
+    ]{\includegraphics[width=\linewidth,height=\textheight]{extracted_media/video_poster.png}}{VPlayer.swf}
+  \end{minipage}
+\end{textblock}
 """
 
-# --- 2. WORKER FUNKTION ---
 def generate_single_slide_latex(slide_data, config):
     slide_num = slide_data.get('slide_number', '?')
     
-    # KORREKTUR: Wir nutzen strikt den Pfad aus dem Config-Objekt!
-    # Keine Defaults, kein Raten.
     rules_block = load_conversion_rules()
 
-    # System Prompt
     system_prompt = (
         "You are a strictly constrained LaTeX Beamer generator. "
         "You do not explain. You only output code."
     )
 
-    # User Prompt
     user_prompt = f"""
     TASK: Convert the following JSON slide data into a LaTeX Beamer Frame using ONLY the syntax shown below.
     

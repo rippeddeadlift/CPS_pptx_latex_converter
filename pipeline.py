@@ -57,7 +57,21 @@ def step_process_and_optimize_data(config):
         align_map = get_text_alignment_map(str(config.PPTX_INPUT))
         print("align_map:", align_map)
         slides_data = transform_docling_json_to_slides(raw_data, align_map)
+        media_storage = getattr(config, 'LAYOUT_DATA_BY_SLIDE', {})
         
+        if media_storage:
+            print(f"Merging extracted media into slides...")
+            
+            for i, slide in enumerate(slides_data):
+                if i in media_storage:
+                    media_items = media_storage[i]
+                    
+                    if 'elements' not in slide:
+                        slide['elements'] = []
+                    
+                    for item in media_items:
+                        slide['elements'].append(item)
+                        print(f"  -> Slide {i+1}: Merged {item['type']} '{item['filename']}' at y={item['geometry']['y']}")
         print(f"Saving {len(slides_data)} slides to: {output_path}")
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(slides_data, f, indent=2, ensure_ascii=False)

@@ -18,6 +18,7 @@ def generate_latex_preamble(metadata, detected_header=None):
 \usepackage[utf8]{{inputenc}}
 \usepackage[T1]{{fontenc}}
 \usepackage[ngerman]{{babel}}
+\usepackage{{media9}}
 \usepackage{{graphicx}}
 \usepackage{{booktabs}}
 \usepackage{{listings}}
@@ -65,6 +66,7 @@ def generate_latex_preamble(metadata, detected_header=None):
 \begin{{document}}
 
 \setbeamertemplate{{footline}}{{}} 
+\setbeamertemplate{{navigation symbols}}{{}}
 \begin{{frame}}
   \titlepage
 \end{{frame}}
