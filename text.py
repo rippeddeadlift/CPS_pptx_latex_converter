@@ -1,7 +1,5 @@
 from pptx import Presentation
 
-# Wir behalten den alten Namen 'get_text_alignment_map',
-# damit pipeline.py und main.py nicht geändert werden müssen.
 def get_text_alignment_map(pptx_path):
     """
     Sucht NUR nach Texten, die mit >= 2 leeren Absätzen (Enters) beginnen.

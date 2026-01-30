@@ -55,7 +55,6 @@ def step_process_and_optimize_data(config):
             
         print("Scanning PPTX for layout overrides...")
         align_map = get_text_alignment_map(str(config.PPTX_INPUT))
-        print("align_map:", align_map)
         slides_data = transform_docling_json_to_slides(raw_data, align_map)
         media_storage = getattr(config, 'LAYOUT_DATA_BY_SLIDE', {})
         
@@ -97,15 +96,11 @@ def step_generate_latex(config):
     # Step 3: Rechne Geometrie und gruppiere Elemente
     slides = enrich_and_group_slides(slides, slide_width, slide_height)
 
-    # Step 4: Automatische Header-Erkennung und -Bereinigung
     header_text = None
     header_result = detect_header_candidate(slides)
     if header_result is not None:
         header_text, header_geometry = header_result
-        #slides = remove_auto_header(slides, header_text, header_geometry)
-        #print(f"[INFO] Detected and removed header: '{header_text}'")
     
-    # (Optional: JSON für Debugging speichern)
     save_json(slides, config.CLEANED_JSON_OUTPUT)
 
     # Step 5: Generiere die LaTeX-Preamble (mit Subtitle!)

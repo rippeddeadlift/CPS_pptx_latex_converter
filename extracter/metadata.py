@@ -24,7 +24,6 @@ def simplify_table_data(table_item: Dict[str, Any]) -> List[List[str]]:
 
 def transform_docling_json_to_slides(raw_data: Dict[str, Any], alignment_map=None) -> List[Dict[str, Any]]:
     if alignment_map is None: alignment_map = {}
-    # 1. Choose Data Source
     if "structure_analysis" in raw_data:
         source_data = raw_data["structure_analysis"]
     else:

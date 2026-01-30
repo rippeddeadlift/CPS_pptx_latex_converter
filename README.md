@@ -1,4 +1,4 @@
-# [Projektname] - PPTX to LaTeX Beamer Converter
+# PPTX to LaTeX Beamer Converter
 
 > **Verwandelt PowerPoint-Präsentationen in LaTeX Beamer-Folien.**
 > *Powered by LLMs (Ollama) & Docling.*

@@ -18,7 +18,7 @@ def compile_tex_to_pdf(tex_filename, working_dir):
     Kompiliert die .tex Datei.
     WICHTIG: Führt den Befehl IM working_dir aus (cwd), damit relative Bildpfade funktionieren.
     """
-    print(f"⚙️ Compiling {tex_filename} in {working_dir}...")
+    print(f"Compiling {tex_filename} in {working_dir}...")
     
     command = [
         "pdflatex",
@@ -120,10 +120,9 @@ def extract_metadata(config) -> dict:
             "institute": ""
         }
 
-def _calculate_geometry(bbox, page_width, page_height):
+def calculate_geometry(bbox, page_width, page_height):
     """
     Berechnet relative LaTeX-Koordinaten (0.0-1.0).
-    Korrigiert automatisch vertauschte Top/Bottom Werte.
     """
     if not bbox or page_width == 0 or page_height == 0:
         return None
@@ -133,10 +132,8 @@ def _calculate_geometry(bbox, page_width, page_height):
     r = bbox.get('r', 0)
     b = bbox.get('b', 0)
     
-    width_emu = abs(r - l)
-    
-    height_emu = abs(b - t)
-    
+    width_emu = abs(r - l)    
+    height_emu = abs(b - t)    
     visual_top = min(t, b)
     
     rel_x = l / page_width
@@ -150,6 +147,7 @@ def _calculate_geometry(bbox, page_width, page_height):
         "w": round(max(0.0, min(1.0, rel_w)), 3),
         "h": round(max(0.0, min(1.0, rel_h)), 3) 
     }
+
 def is_code_line(line):
     # Heuristik: erkenne Java/C-artige Zeilen
     code_tokens = [';', '{', '}', 'int ', 'public ', 'private ', '=', 'while ', 'if ', 'for ']
@@ -363,7 +361,7 @@ def enrich_and_group_slides(slides, slide_width, slide_height):
         elements = slide.get('elements', [])
         for el in elements:
             if 'bbox' in el:
-                geo = _calculate_geometry(el['bbox'], slide_width, slide_height)
+                geo = calculate_geometry(el['bbox'], slide_width, slide_height)
                 el['geometry'] = geo
                 del el['bbox']
         slide['elements'] = group_elements(elements)
@@ -375,17 +373,13 @@ def save_json(data, path):
 
 
 def sanitize_latex(llm_text):
-    # Fix possible backspace or control char substitution (hex 08, 09, 0a, etc.) at start of commands
     latex = re.sub(r'([\x00-\x1F]|\/)+begin', r'\\begin', llm_text, flags=re.MULTILINE)
     latex = re.sub(r'([\x00-\x1F]|\/)+end', r'\\end', latex, flags=re.MULTILINE)
 
-    # Fix all standalone '/item' to '\item'
     latex = re.sub(r'([\x00-\x1F]|\/)+item', r'\\item', latex, flags=re.MULTILINE)
 
-    # As safety, replace *any* remaining '\x08' (ASCII 8) anywhere with '\\'
     latex = latex.replace('\x08', '\\')
 
-    # Replace double-backslash back to single if LLM double-escapes
     latex = re.sub(r'\\\\begin', r'\\begin', latex)
     latex = re.sub(r'\\\\end', r'\\end', latex)
     latex = re.sub(r'\\\\item', r'\\item', latex)

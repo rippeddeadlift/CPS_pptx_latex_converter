@@ -15,13 +15,11 @@ def extract_media_from_pptx(pptx_path, output_dir):
     layout_data_by_slide = {}
     global_media_count = 1 
 
-    print(f"   -> Scanning {len(prs.slides)} slides for video/media...")
 
     for i, slide in enumerate(prs.slides):
         slide_index = i
         slide_media = []
         
-        # Das ist der Schlüssel: Wir laden alle Beziehungen der Folie einmal
         rels = slide.part.rels
 
         for shape in slide.shapes:
@@ -31,19 +29,17 @@ def extract_media_from_pptx(pptx_path, output_dir):
 
         if slide_media:
             layout_data_by_slide[slide_index] = slide_media
-            print(f"      Slide {i+1}: Found {len(slide_media)} media items")
+            print(f"Slide {i+1}: Found {len(slide_media)} media items")
 
     return layout_data_by_slide
 
 def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_height):
     
-    # 1. GRUPPEN
     if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
         for child in shape.shapes:
             count = _process_shape(child, rels, slide_media, output_dir, count, s_width, s_height)
         return count
 
-    # 2. VIDEO CHECK (Brute Force)
     xml_text = shape.element.xml
     rids = re.findall(r'r:embed="([^"]+)"', xml_text) + \
            re.findall(r'r:link="([^"]+)"', xml_text)
@@ -58,7 +54,6 @@ def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_heigh
                 ctype = part.content_type.lower()
 
                 if ctype.startswith('video/') or ctype in ['application/x-mplayer2']:
-                    # --- A. VIDEO SPEICHERN ---
                     ext = "mp4"
                     if "wmv" in ctype: ext = "wmv"
                     elif "avi" in ctype: ext = "avi"
@@ -70,11 +65,8 @@ def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_heigh
                     with open(video_filepath, "wb") as f:
                         f.write(part.blob)
                     
-                    # --- B. POSTER (VORSCHAUBILD) SPEICHERN ---
-                    # Das ist der neue Teil! Wir versuchen das Bild des Shapes zu holen.
                     poster_path_json = ""
                     try:
-                        # Fast jedes Video-Shape hat auch ein .image Attribut (das Poster)
                         if hasattr(shape, "image"):
                             img = shape.image
                             img_ext = img.ext
@@ -84,7 +76,6 @@ def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_heigh
                             with open(poster_filepath, "wb") as f_img:
                                 f_img.write(img.blob)
                             
-                            # Pfad für JSON vorbereiten
                             parent_folder = Path(poster_filepath).parent.name
                             poster_path_json = f"{parent_folder}/{poster_filename}"
                             print(f"      [POSTER] Saved preview image: {poster_filename}")
@@ -93,8 +84,6 @@ def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_heigh
 
                     print(f"      [HIT] Video found: {video_filename}")
                     
-                    # --- C. DATEN ZUSAMMENFÜGEN ---
-                    # Wir fügen 'poster_path' zum JSON hinzu
                     relative_folder = Path(video_filepath).parent.name
                     video_json_path = f"{relative_folder}/{video_filename}"
                     
@@ -107,7 +96,7 @@ def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_heigh
                         "type": "video",
                         "filename": video_filename,
                         "path": video_json_path,
-                        "poster_path": poster_path_json, # <--- HIER IST ES DRIN
+                        "poster_path": poster_path_json, 
                         "geometry": {
                             "x": round(left, 3), "y": round(top, 3),
                             "w": round(width, 3), "h": round(height, 3)
@@ -118,7 +107,6 @@ def _process_shape(shape, rels, slide_media, output_dir, count, s_width, s_heigh
             except Exception as e:
                 continue
 
-    # 3. NORMALES BILD (Fallback)
     if shape.shape_type == MSO_SHAPE_TYPE.PICTURE:
         return _save_shape_image(shape, slide_media, output_dir, count, s_width, s_height)
 
