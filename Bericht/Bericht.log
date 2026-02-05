@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.7.9)  30 JAN 2026 12:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.28 (TeX Live 2025) (preloaded format=pdflatex 2025.7.9)  5 FEB 2026 12:53
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -909,7 +909,7 @@ Package hyperref Info: Link coloring ON on input line 25.
 \openout3 = `Bericht.out'.
 
 \c@lstlisting=\count323
-<img/TH_Koeln_Logo.pdf, id=113, 1220.45953pt x 660.74356pt>
+<img/TH_Koeln_Logo.pdf, id=121, 1220.45953pt x 660.74356pt>
 File: img/TH_Koeln_Logo.pdf Graphic file (type pdf)
 <use img/TH_Koeln_Logo.pdf>
 Package pdftex.def Info: img/TH_Koeln_Logo.pdf  used on input line 53.
@@ -1000,16 +1000,16 @@ Underfull \hbox (badness 10000) in paragraph at lines 90--91
 
 
 [2]
-<img/xmlPic.png, id=174, 554.67226pt x 320.99925pt>
+<img/xmlPic.png, id=184, 554.67226pt x 320.99925pt>
 File: img/xmlPic.png Graphic file (type png)
 <use img/xmlPic.png>
 Package pdftex.def Info: img/xmlPic.png  used on input line 96.
-(pdftex.def)             Requested size: 345.0pt x 199.65912pt.
-<img/relsPic.png, id=175, 670.30424pt x 132.495pt>
+(pdftex.def)             Requested size: 310.4979pt x 179.69467pt.
+<img/relsPic.png, id=185, 670.30424pt x 132.495pt>
 File: img/relsPic.png Graphic file (type png)
 <use img/relsPic.png>
 Package pdftex.def Info: img/relsPic.png  used on input line 103.
-(pdftex.def)             Requested size: 345.0pt x 68.19423pt.
+(pdftex.def)             Requested size: 310.4979pt x 61.375pt.
 
 Underfull \hbox (badness 10000) in paragraph at lines 117--118
 
@@ -1036,8 +1036,6 @@ Overfull \hbox (1.72287pt too wide) in paragraph at lines 126--127
  []
 
 
-
-[4]
 Underfull \hbox (badness 3118) in paragraph at lines 158--158
 []|\OT1/cmr/m/n/10 Fehlende Un-terst[]utzung f[]ur
  []
@@ -1084,148 +1082,198 @@ Underfull \hbox (badness 10000) in paragraph at lines 158--158
 
 
 
+[4]
+
 [5
 pdfTeX warning (ext4): destination with the same identifier (name{table.1}) has
  been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.168 \section
-              {Systementwurf und Architektur}]
-Overfull \hbox (43.72293pt too wide) in paragraph at lines 179--180
+l.170 
+      ]
+Underfull \hbox (badness 10000) in paragraph at lines 177--178
+
+ []
+
+<img/qwen3_8b.png, id=204, 558.888pt x 122.25674pt>
+File: img/qwen3_8b.png Graphic file (type png)
+<use img/qwen3_8b.png>
+Package pdftex.def Info: img/qwen3_8b.png  used on input line 199.
+(pdftex.def)             Requested size: 310.4979pt x 67.9223pt.
+<img/qwen2_5_coder_7b.png, id=205, 559.49025pt x 122.859pt>
+File: img/qwen2_5_coder_7b.png Graphic file (type png)
+<use img/qwen2_5_coder_7b.png>
+Package pdftex.def Info: img/qwen2_5_coder_7b.png  used on input line 205.
+(pdftex.def)             Requested size: 310.4979pt x 68.18378pt.
+
+
+[6]
+Overfull \hbox (43.72293pt too wide) in paragraph at lines 220--221
 \OT1/cmr/m/n/10 Der Extraktions-Layer fun-giert als Schnitt-stel-le zwi-schen d
 em OpenXML-Containerformat
  []
 
 
 
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 202--202
-
- []
-
-<img/calculate_geometry.png, id=197, 323.40825pt x 389.65575pt>
-File: img/calculate_geometry.png Graphic file (type png)
-<use img/calculate_geometry.png>
-Package pdftex.def Info: img/calculate_geometry.png  used on input line 203.
-(pdftex.def)             Requested size: 207.0021pt x 249.4026pt.
-
-
-[7]
-<img/JSON_RAW.png, id=205, 511.31026pt x 387.849pt>
-File: img/JSON_RAW.png Graphic file (type png)
-<use img/JSON_RAW.png>
-Package pdftex.def Info: img/JSON_RAW.png  used on input line 218.
-(pdftex.def)             Requested size: 345.0pt x 261.70982pt.
-<img/JSON_CLEANED.png, id=206, 509.5035pt x 158.39175pt>
-File: img/JSON_CLEANED.png Graphic file (type png)
-<use img/JSON_CLEANED.png>
-Package pdftex.def Info: img/JSON_CLEANED.png  used on input line 222.
-(pdftex.def)             Requested size: 345.0pt x 107.25058pt.
-
-
-[8
+[7
 pdfTeX warning (ext4): destination with the same identifier (name{figure.3}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.228 
+l.221 
+      
+pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.221 
+       <./img/qwen3_8b.png (PNG copy)> <./img/qwen2_5_coder_7b.png (PNG copy)>]
+
+
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 243--243
+
+ []
+
+<img/calculate_geometry.png, id=223, 323.40825pt x 389.65575pt>
+File: img/calculate_geometry.png Graphic file (type png)
+<use img/calculate_geometry.png>
+Package pdftex.def Info: img/calculate_geometry.png  used on input line 244.
+(pdftex.def)             Requested size: 207.0021pt x 249.4026pt.
+
+
+[9
+pdfTeX warning (ext4): destination with the same identifier (name{figure.5}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.251 
        <./img/calculate_geometry.png (PNG copy)>]
-Overfull \hbox (10.86168pt too wide) in paragraph at lines 230--231
+<img/JSON_RAW.png, id=232, 511.31026pt x 387.849pt>
+File: img/JSON_RAW.png Graphic file (type png)
+<use img/JSON_RAW.png>
+Package pdftex.def Info: img/JSON_RAW.png  used on input line 259.
+(pdftex.def)             Requested size: 310.4979pt x 235.53412pt.
+<img/JSON_CLEANED.png, id=233, 509.5035pt x 158.39175pt>
+File: img/JSON_CLEANED.png Graphic file (type png)
+<use img/JSON_CLEANED.png>
+Package pdftex.def Info: img/JSON_CLEANED.png  used on input line 263.
+(pdftex.def)             Requested size: 310.4979pt x 96.52457pt.
+
+Overfull \hbox (10.86168pt too wide) in paragraph at lines 271--272
 []\OT1/cmr/m/n/10 Diese Stra-te-gie in-stru-iert das nach-ge-la-ger-te Mo-dell,
  ei-ne kor-re-spon-die-ren-de Schrift-
  []
 
 
-Overfull \hbox (0.86174pt too wide) in paragraph at lines 230--231
+Overfull \hbox (0.86174pt too wide) in paragraph at lines 271--272
 \OT1/cmr/m/n/10 gr[]o^^Yen-Skalierung vor-zu-neh-men, oh-ne dass ex-pli-zi-te S
 til-Attribute aus der Quell-
  []
 
 
 
-[9
-pdfTeX warning (ext4): destination with the same identifier (name{figure.4}) ha
+[10
+pdfTeX warning (ext4): destination with the same identifier (name{figure.6}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.235 D
-       ie folgenden Unterabschnitte analysieren die Architektur des verwende...
-
-pdfTeX warning (ext4): destination with the same identifier (name{figure.5}) ha
+l.275 
+      
+pdfTeX warning (ext4): destination with the same identifier (name{figure.7}) ha
 s been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   \__shipout_drop_firstpage_...
-l.235 D
-       ie folgenden Unterabschnitte analysieren die Architektur des verwende...
- <./img/JSON_RAW.png (PNG copy)> <./img/JSON_CLEANED.png (PNG copy)>]
-Overfull \hbox (19.55615pt too wide) in paragraph at lines 235--236
+l.275 
+       <./img/JSON_RAW.png (PNG copy)> <./img/JSON_CLEANED.png (PNG copy)>]
+Overfull \hbox (19.55615pt too wide) in paragraph at lines 276--277
 []\OT1/cmr/m/n/10 Die fol-gen-den Un-ter-ab-schnit-te ana-ly-sie-ren die Ar-chi
 -tek-tur des ver-wen-de-ten Prompts,
  []
 
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 242.
+nput line 283.
 
-Overfull \hbox (108.59863pt too wide) in paragraph at lines 245--246
+Overfull \hbox (108.59863pt too wide) in paragraph at lines 286--287
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 
-Overfull \hbox (34.88885pt too wide) in paragraph at lines 248--249
+Overfull \hbox (34.88885pt too wide) in paragraph at lines 289--290
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 
-Overfull \hbox (29.21887pt too wide) in paragraph at lines 249--251
+Overfull \hbox (29.21887pt too wide) in paragraph at lines 290--292
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 
 
-[10]
-Overfull \hbox (46.22882pt too wide) in paragraph at lines 270--271
+[11]
+Overfull \hbox (46.22882pt too wide) in paragraph at lines 311--312
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][] 
  []
 
 
-Overfull \hbox (17.8789pt too wide) in paragraph at lines 277--278
+Overfull \hbox (17.8789pt too wide) in paragraph at lines 318--319
 [][][][][][][][][][][][][][][] 
  []
 
 
-Overfull \hbox (4.97281pt too wide) in paragraph at lines 291--293
+Overfull \hbox (4.97281pt too wide) in paragraph at lines 332--334
 []\OT1/cmr/m/n/10 Der Kom-pi-lie-rungs-pro-zess wird pro-gram-ma-tisch []uber d
 ie subprocess-Schnittstelle
  []
 
 
 
-[11]
-LaTeX Font Info:    Trying to load font information for OMS+cmtt on input line 
-314.
-LaTeX Font Info:    No file OMScmtt.fd. on input line 314.
+[12]
+LaTeX Font Info:    Trying to load font information for OMS+cmr on input line 3
+55.
+ (c:/texlive/2025/texmf-dist/tex/latex/base/omscmr.fd
+File: omscmr.fd 2024/11/19 v2.5n Standard LaTeX font definitions
+)
+LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <10> not available
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 355.
 
-
-LaTeX Font Warning: Font shape `OMS/cmtt/m/n' undefined
-(Font)              using `OMS/cmsy/m/n' instead
-(Font)              for symbol `textbackslash' on input line 314.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 314--315
+Underfull \hbox (badness 10000) in paragraph at lines 355--356
 
  []
 
 
 
-[12]
-
-LaTeX Warning: Reference `fig:vergleich_konverter' on page 13 undefined on inpu
-t line 325.
-
-
-
 [13]
-Overfull \hbox (11.55608pt too wide) in paragraph at lines 346--347
+<img/vergleich_Aspose.png, id=305, 1096.095pt x 617.9085pt>
+File: img/vergleich_Aspose.png Graphic file (type png)
+<use img/vergleich_Aspose.png>
+Package pdftex.def Info: img/vergleich_Aspose.png  used on input line 372.
+(pdftex.def)             Requested size: 310.4979pt x 175.04033pt.
+<img/vergleich_mine_converter.png, id=306, 1038.279pt x 585.387pt>
+File: img/vergleich_mine_converter.png Graphic file (type png)
+<use img/vergleich_mine_converter.png>
+Package pdftex.def Info: img/vergleich_mine_converter.png  used on input line 3
+79.
+(pdftex.def)             Requested size: 310.4979pt x 175.06364pt.
+
+
+[14]
+
+[15
+pdfTeX warning (ext4): destination with the same identifier (name{figure.8}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.400 	\newpage
+               
+pdfTeX warning (ext4): destination with the same identifier (name{figure.9}) ha
+s been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  \__shipout_drop_firstpage_...
+l.400 	\newpage
+                <./img/vergleich_Aspose.png (PNG copy)> <./img/vergleich_mine_c
+onverter.png (PNG copy)>]
+Overfull \hbox (11.55608pt too wide) in paragraph at lines 402--403
 []\OT1/cmr/m/n/10 Bei der Er-stel-lung die-ser Ar-beit wur-den KI-gest[]utzte W
 erk-zeu-ge zur Un-terst[]utzung
  []
@@ -1237,7 +1285,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.347 		\newpage
+l.403 		\newpage
                  [1] (./Bericht.bbl)
 
 
@@ -1245,30 +1293,23 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.}) has b
 een already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.352 \end{document}
+l.408 \end{document}
                      [2] (./Bericht.aux)
  ***********
 LaTeX2e <2025-06-01> patch level 1
 L3 programming layer <2025-06-30>
  ***********
-
-
-LaTeX Font Warning: Some font shapes were not available, defaults substituted.
-
-
-LaTeX Warning: There were undefined references.
-
 Package rerunfilecheck Info: File `Bericht.out' has not changed.
-(rerunfilecheck)             Checksum: 6E39B4B695E6634901D7F29BC029252F;5109.
+(rerunfilecheck)             Checksum: 4A2D7D0F2F5DB2197641746E20B207CA;5456.
  ) 
 Here is how much of TeX's memory you used:
- 15159 strings out of 467822
- 264563 string characters out of 5436583
- 756299 words of memory out of 5000000
- 43494 multiletter control sequences out of 15000+600000
+ 15212 strings out of 467822
+ 265831 string characters out of 5436583
+ 757604 words of memory out of 5000000
+ 43536 multiletter control sequences out of 15000+600000
  633666 words of font info for 63 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 123i,20n,121p,783b,1983s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 123i,19n,121p,815b,1106s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <c:/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><c:/tex
 live/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><c:/texlive/2025
 /texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb><c:/texlive/2025/texmf-dis
@@ -1283,10 +1324,10 @@ dist/fonts/type1/public/amsfonts/cm/cmti10.pfb><c:/texlive/2025/texmf-dist/font
 s/type1/public/amsfonts/cm/cmti9.pfb><c:/texlive/2025/texmf-dist/fonts/type1/pu
 blic/amsfonts/cm/cmtt10.pfb><c:/texlive/2025/texmf-dist/fonts/type1/public/amsf
 onts/cm/cmtt9.pfb>
-Output written on Bericht.pdf (18 pages, 448893 bytes).
+Output written on Bericht.pdf (20 pages, 736815 bytes).
 PDF statistics:
- 384 PDF objects out of 1000 (max. 8388607)
- 323 compressed objects within 4 object streams
- 91 named destinations out of 1000 (max. 500000)
- 251 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 416 PDF objects out of 1000 (max. 8388607)
+ 349 compressed objects within 4 object streams
+ 99 named destinations out of 1000 (max. 500000)
+ 287 words of extra memory for PDF output out of 10000 (max. 10000000)
 

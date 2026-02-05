@@ -20,51 +20,61 @@
 \newlabel{sub:doc_analysis}{{1.3}{3}{Herausforderungen der Dokumentenanalyse}{subsection.1.3}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Large Language Models in der Codegenerierung}{4}{subsection.1.4}\protected@file@percent }
 \newlabel{sec:llm_generation}{{1.4}{4}{Large Language Models in der Codegenerierung}{subsection.1.4}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Analyse genutzter Extraktions-Technologien}{4}{section.2}\protected@file@percent }
-\newlabel{sec:tech_analysis}{{2}{4}{Analyse genutzter Extraktions-Technologien}{section.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}SWOT-Tabelle}{5}{subsection.2.1}\protected@file@percent }
-\newlabel{sub_swot_analysis}{{2.1}{5}{SWOT-Tabelle}{subsection.2.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Analyse genutzter Technologien}{4}{section.2}\protected@file@percent }
+\newlabel{sec:tech_analysis}{{2}{4}{Analyse genutzter Technologien}{section.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Evaluation der Extraktionsverfahren}{5}{subsection.2.1}\protected@file@percent }
+\newlabel{sub_swot_analysis}{{2.1}{5}{Evaluation der Extraktionsverfahren}{subsection.2.1}{}}
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces SWOT-Analyse der Extraktions-Technologien}}{5}{table.1}\protected@file@percent }
 \newlabel{tab:swot_comparison}{{1}{5}{SWOT-Analyse der Extraktions-Technologien}{table.1}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {3}Systementwurf und Architektur}{6}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Pipeline-Konzept und Modulbauweise}{6}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Extraktions-Layer}{6}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Strukturanalyse}{6}{subsubsection.3.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Medien-Extraktion}{7}{subsubsection.3.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Datenminimierung}{7}{subsection.3.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Geometrische Rekonstruktion}{7}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Koordinatentransformation}{7}{subsubsection.3.4.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Python-Implementierung der Normalisierungslogik: Umrechnung absoluter EMUs in relative Koordinaten.\\}}{8}{figure.3}\protected@file@percent }
-\newlabel{fig:code_geometry}{{3}{8}{Python-Implementierung der Normalisierungslogik: Umrechnung absoluter EMUs in relative Koordinaten.\\}{figure.3}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Semantische Anreicherung}{8}{subsubsection.3.4.2}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Vor der Transformation. \\}}{9}{figure.4}\protected@file@percent }
-\newlabel{fig:json_raw_transformation}{{4}{9}{Vor der Transformation. \\}{figure.4}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Nach der Transformation.\\}}{9}{figure.5}\protected@file@percent }
-\newlabel{fig:json_cleaned_transformation}{{5}{9}{Nach der Transformation.\\}{figure.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Agenten-basierte Synthese}{9}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5.1}Prompt-Engineering und Methodik}{10}{subsubsection.3.5.1}\protected@file@percent }
-\newlabel{lst:prompt_rules}{{1}{10}{Definition des Eingabedatensatzes}{lstlisting.1}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}Definition des Eingabedatensatzes}{10}{lstlisting.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Exemplarische Anweisung:}{10}{section*.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Inferenz-Infrastruktur}{6}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.2.1}Modellwahl}{6}{subsubsection.2.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Generierungsergebnis des Qwen3-Modells (8B)}}{7}{figure.3}\protected@file@percent }
+\newlabel{fig:qwen3_8b}{{3}{7}{Generierungsergebnis des Qwen3-Modells (8B)}{figure.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Generierungsergebnis des Qwen2.5-Coder-Modells (7B)}}{7}{figure.4}\protected@file@percent }
+\newlabel{fig:qwen2_5_coder_7b}{{4}{7}{Generierungsergebnis des Qwen2.5-Coder-Modells (7B)}{figure.4}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Systementwurf und Architektur}{7}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Pipeline-Konzept und Modulbauweise}{7}{subsection.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Extraktions-Layer}{7}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.1}Strukturanalyse}{8}{subsubsection.3.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.2.2}Medien-Extraktion}{8}{subsubsection.3.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Datenminimierung}{8}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Geometrische Rekonstruktion}{9}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.1}Koordinatentransformation}{9}{subsubsection.3.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Python-Implementierung der Normalisierungslogik: Umrechnung absoluter EMUs in relative Koordinaten.\\}}{9}{figure.5}\protected@file@percent }
+\newlabel{fig:code_geometry}{{5}{9}{Python-Implementierung der Normalisierungslogik: Umrechnung absoluter EMUs in relative Koordinaten.\\}{figure.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.4.2}Semantische Anreicherung}{9}{subsubsection.3.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Vor der Transformation. \\}}{10}{figure.6}\protected@file@percent }
+\newlabel{fig:json_raw_transformation}{{6}{10}{Vor der Transformation. \\}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Nach der Transformation.\\}}{10}{figure.7}\protected@file@percent }
+\newlabel{fig:json_cleaned_transformation}{{7}{10}{Nach der Transformation.\\}{figure.7}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Agenten-basierte Synthese}{11}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {3.5.1}Prompt-Engineering und Methodik}{11}{subsubsection.3.5.1}\protected@file@percent }
+\newlabel{lst:prompt_rules}{{1}{11}{Definition des Eingabedatensatzes}{lstlisting.1}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}Definition des Eingabedatensatzes}{11}{lstlisting.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Exemplarische Anweisung:}{11}{section*.2}\protected@file@percent }
 \citation{Eijkhout1991}
-\newlabel{lst:few_shot_example}{{2}{11}{Beispielhafte Instanz für die In-Context-Konditionierung}{lstlisting.2}{}}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}Beispielhafte Instanz für die In-Context-Konditionierung}{11}{lstlisting.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Kompilierung}{11}{subsection.3.6}\protected@file@percent }
+\newlabel{lst:few_shot_example}{{2}{12}{Beispielhafte Instanz für die In-Context-Konditionierung}{lstlisting.2}{}}
+\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}Beispielhafte Instanz für die In-Context-Konditionierung}{12}{lstlisting.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Kompilierung}{12}{subsection.3.6}\protected@file@percent }
 \citation{Aspose2026}
-\@writefile{toc}{\contentsline {section}{\numberline {4}Ergebnisse}{12}{section.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Artefakte und Limitationen}{12}{subsection.4.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Designelemente:}{12}{section*.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Verschachtelung und Layout-Shifting:}{12}{section*.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {paragraph}{Datenintegrität bei der Medienextraktion:}{12}{section*.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Vergleich mit bestehenden Lösungen}{12}{subsection.4.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Fazit und Ausblick}{13}{section.5}\protected@file@percent }
-\newlabel{sec:conclusion}{{5}{13}{Fazit und Ausblick}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Zusammenfassung der Erkenntnisse}{13}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Zukünftige Erweiterungsmöglichkeiten}{13}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Abschließende Betrachtung}{13}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Ergebnisse}{13}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Artefakte und Limitationen}{13}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Designelemente:}{13}{section*.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Verschachtelung und Layout-Shifting:}{13}{section*.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Datenintegrität bei der Medienextraktion:}{13}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Vergleich mit bestehenden Lösungen}{13}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Resultat des Aspose-Konverters (koordinatenbasiert)}}{15}{figure.8}\protected@file@percent }
+\newlabel{fig:vergleich_Aspose}{{8}{15}{Resultat des Aspose-Konverters (koordinatenbasiert)}{figure.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Resultat des eigenen Systems (semantisch strukturiert)}}{15}{figure.9}\protected@file@percent }
+\newlabel{fig:vergleich_mine_converter}{{9}{15}{Resultat des eigenen Systems (semantisch strukturiert)}{figure.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Fazit und Ausblick}{15}{section.5}\protected@file@percent }
+\newlabel{sec:conclusion}{{5}{15}{Fazit und Ausblick}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Zusammenfassung der Erkenntnisse}{15}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Zukünftige Erweiterungsmöglichkeiten}{15}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Abschließende Betrachtung}{15}{subsection.5.3}\protected@file@percent }
 \bibstyle{natdin}
 \bibdata{Literaturverzeichnis}
 \bibcite{Aspose2026}{{1}{2026}{{Aspose Pty Ltd}}{{}}}
 \bibcite{Eijkhout1991}{{2}{1991}{{Eijkhout}}{{}}}
 \@writefile{toc}{\contentsline {section}{Literaturverzeichnis}{}{section*.6}\protected@file@percent }
-\gdef \@abspage@last{18}
+\gdef \@abspage@last{20}

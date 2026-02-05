@@ -93,14 +93,14 @@ Ein weiterer Bestandteil sind die Master Layouts. Diese befinden sich physisch i
 	\centering
 	
 	\caption{Repräsentation des Bildobjekts in der XML Baumstruktur.\\}
-	\includegraphics[width=\textwidth]{img/xmlPic.png}
+\includegraphics[width=0.9\textwidth]{img/xmlPic.png}
 	\label{fig:xml_tree_detail}
 	
 	\vspace{1cm} 
 	
 	
 	\caption{Referenzierung auf das Bild in der .rels Datei.\\}
-	\includegraphics[width=\textwidth]{img/relsPic.png}
+	\includegraphics[width=0.9\textwidth]{img/relsPic.png}
 	\label{fig:rels_pic_detail}
 \end{figure}
 
@@ -127,7 +127,7 @@ Die zentrale Stärke dieser Modelle liegt in der Fähigkeit zum In-Context Learn
 
 In dieser Pipeline übernehmen LLMs somit die Rolle eines intelligenten Compilers, der die Brücke zwischen der rein geometrischen Beschreibung einer Folie und der logischen Strukturierung eines wissenschaftlichen Dokuments schlägt. Die Effizienz dieses Schritts hängt maßgeblich davon ab, wie präzise die Tokenisierung der Eingabedaten erfolgt, um das Kontext-Fenster optimal zu nutzen und Halluzinationen bei der Positionierung von Elementen zu minimieren.
 
-\section{Analyse genutzter Extraktions-Technologien}
+\section{Analyse genutzter Technologien}
 \label{sec:tech_analysis}
 
 
@@ -136,7 +136,7 @@ Die Auswahl einer geeigneten Extraktions-Engine ist die kritischste Design-Entsc
 Hierbei werden insbesondere die Frameworks Unstructured und Docling gegenübergestellt, die im Bereich der Dokumentenanalyse als führende Open-Source-Lösungen gelten. Durch eine systematische Analyse ihrer Funktionsweisen und Einschränkungen wird die technologische Basis für den anschließenden Systementwurf definiert. Ziel ist es, das Framework zu identifizieren, das die höchste Konsistenz bei der Extraktion von Tabellen, Listen und absoluten Positionen bietet, um den Determinismus des nachgelagerten Sprachmodells zu gewährleisten.
 
 
-\subsection{SWOT-Tabelle}
+\subsection{Evaluation der Extraktionsverfahren}
 \label{sub_swot_analysis}
 
 \begin{table}[h]
@@ -164,6 +164,47 @@ Um eine konstante und deterministische Ausgabe zu garantieren, ist eine radikale
 
 Eine detaillierte Darstellung der entwickelten JSON-Strukturen sowie die Validierung der daraus resultierenden Konvertierungsqualität erfolgt im Kapitel 4 bei den Ergebnissen.
 
+\subsection{Inferenz-Infrastruktur}
+
+Die lokale Bereitstellung des LLMs erfordert eine Inferenz-Infrastruktur, welche die Modellverwaltung sowie die Kommunikation mit der Pipeline übernimmt. Im Rahmen dieses Projekts wurde {Ollama} als primäres Framework gewählt. 
+
+Die Entscheidung für Ollama basiert auf mehreren funktionalen Vorteilen:
+
+Das Framework ermöglicht den Zugriff auf eine Vielzahl vorkonfigurierter Modelle sowie eine einfache Installation und Aktualisierung.
+
+Durch die Bereitstellung einer lokalen REST-Schnittstelle lässt sich Ollama nahtlos in die bestehende Python-Applikation integrieren.
+
+ Die zugehörige Applikation erlaubt es, Prompts vorab interaktiv zu evaluieren. Da die Inferenz-Parameter in dieser Testumgebung identisch mit der API-Schnittstelle sind, ist eine hohe Konsistenz der Ergebnisse zwischen Testphase und produktiver Anwendung gewährleistet.\\
+
+
+Als weitere technologische Möglichkeit auf dem Markt existiert zudem {LM Studio}. Ein wesentlicher Unterschied liegt hier in der Kontrolle über die Hardware-Ressourcen. Im Gegensatz zu Ollama erlaubt LM Studio die explizite Zuweisung von Systemspeicher oder Grafikspeicher für das jeweilige Modell, was insbesondere bei spezifischen Hardware-Optimierungen von Vorteil sein kann. Für den Workflow dieser Arbeit deckte Ollama jedoch alle notwendigen Anforderungen an die Automatisierung und Stabilität vollständig ab.
+
+\subsubsection{Modellwahl}
+
+Die Auswahl des Sprachmodells ist maßgeblich für die Qualität des generierten {LaTeX}-Codes verantwortlich. Da die Inferenz lokal durchgeführt wird, ist die Modellwahl jedoch direkt an die Hardware-Ressourcen des Test-Systems gebunden. Aufgrund der verfügbaren Rechenleistung stieß das System bei Modellen mit einer Parametergröße von ca. 8 Milliarden (8B) an seine Leistungsgrenzen, weshalb der Fokus auf Modellen in dieser Größenordnung lag.
+
+Im Rahmen der Evaluation wurden verschiedene Modelle getestet:
+\begin{itemize}
+	\item {deepseek-r1:8b:} Trotz der hohen Bekanntheit von DeepSeek im Web konnten diese Modelle für die Code-Generierung in diesem spezifischen Kontext keine ausreichend konsistenten Ergebnisse liefern.
+	\item {qwen3:8b:} Dieses Modell lieferte qualitativ hochwertige Ergebnisse. Da es sich hierbei jedoch um ein \texttt{Thinking} -Modell handelt, lag die Verarbeitungszeit bei ca. zwei bis drei Minuten pro Folie. Diese Inferenzgeschwindigkeit erwies sich für den Betrieb einer zeiteffizienten automatisierten Pipeline als unzureichend.
+	\item {qwen2.5-coder:7b:} Dieses Modell stellte sich als optimaler Kompromiss heraus. Es lieferte eine zum 8B-Modell gleichwertige Code-Qualität, reduzierte die Verarbeitungszeit jedoch signifikant auf ca. 20 bis 30 Sekunden pro Folie. 
+\end{itemize}
+
+Der direkte visuelle Vergleich (siehe Abbildungen \ref{fig:qwen3_8b} und \ref{fig:qwen2_5_coder_7b}) verdeutlicht, dass das spezialisierte Coder-Modell trotz geringerer Parameteranzahl präzisere Strukturen erzeugt.
+
+\begin{figure}[H]
+	\centering
+	
+	\caption{Generierungsergebnis des Qwen3-Modells (8B)}
+	\includegraphics[width=0.9\textwidth]{img/qwen3_8b.png}
+	\label{fig:qwen3_8b}
+	
+	\vspace{2em} 
+	
+	\caption{Generierungsergebnis des Qwen2.5-Coder-Modells (7B)}
+	\includegraphics[width=0.9\textwidth]{img/qwen2_5_coder_7b.png}
+	\label{fig:qwen2_5_coder_7b}
+\end{figure}
 
 \section{Systementwurf und Architektur}
 
@@ -215,11 +256,11 @@ Abbildungen \ref{fig:json_raw_transformation}  und \ref{fig:json_cleaned_transfo
 \begin{figure}[H]
 		\centering
 	\caption{Vor der Transformation. \\}
-	\includegraphics[width=\textwidth]{img/JSON_RAW.png}
+	\includegraphics[width=0.9\textwidth]{img/JSON_RAW.png}
 	\label{fig:json_raw_transformation}
 	
 	\caption{Nach der Transformation.\\}
-	\includegraphics[width=\textwidth]{img/JSON_CLEANED.png}
+	\includegraphics[width=0.9\textwidth]{img/JSON_CLEANED.png}
 	\label{fig:json_cleaned_transformation}
 		
 
@@ -311,7 +352,7 @@ Der Kompilierungsprozess wird programmatisch über die {subprocess}-Schnittstell
 
 Zur Einordnung der Ergebnisse wird das entwickelte System mit dem kommerziellen Konverter von {Aspose} verglichen [\cite{Aspose2026}]. Dabei zeigen sich grundlegende Unterschiede in der technologischen Herangehensweise sowie in der Qualität des generierten Codes.
 
-Der Konverter von Aspose verfolgt einen vektorbasierten Export-Ansatz. Anstatt semantische Strukturen wie Listen oder Textblöcke zu erkennen, wird die Folie in hunderte Einzeloperationen zerlegt. Wie in dem Code-Beispiel ersichtlich, nutzt das Tool die \texttt{picture}-Umgebung und \texttt{\textbackslash put}-Befehle, um jedes Zeichen einzeln auf einer absoluten Koordinate zu platzieren. Grafische Elemente werden über komplexe \texttt{tikzpicture}-Scopes und \texttt{filldraw}-Befehle rekonstruiert.\\
+Der Konverter von Aspose verfolgt einen vektorbasierten Export-Ansatz. Anstatt semantische Strukturen wie Listen oder Textblöcke zu erkennen, wird die Folie in hunderte Einzeloperationen zerlegt. Das Tool nutzt die {picture}-Umgebung und {\textbackslash put}-Befehle, um jedes Zeichen einzeln auf einer absoluten Koordinate zu platzieren. Grafische Elemente werden über {tikzpicture}-Scopes und {filldraw}-Befehle rekonstruiert.\\
 
  Ein wesentlicher Vorteil des Aspose-Konverters liegt in der hohen visuellen Fidelity. Da jedes Element pixelgenau positioniert wird, entspricht das Layout exakt der ursprünglichen PowerPoint-Folie. Auch komplexe Shapes, Design-Templates und Farbeinstellungen werden präzise übernommen.
 
@@ -322,7 +363,22 @@ Demgegenüber stehen jedoch signifikante Nachteile in der Nutzbarkeit des Codes:
 	  \item {Instabilität der Typografie:} Trotz der exakten Koordinaten kommt es häufig zu Verschiebungen bei Schriftarten und Textabständen, was das Schriftbild unruhig wirken lässt.
  \end{itemize}
 
-Im direkten Vergleich (siehe Abbildung \ref{fig:vergleich_konverter}) wird der konzeptionelle Unterschied deutlich: Während das Vergleichstool eine rein visuelle Kopie auf Kosten der Editierbarkeit erstellt, erzeugt das hier entwickelte System ein strukturiertes Dokument. Der Einsatz des LLM erlaubt es, aus den Rohdaten wieder logische Einheiten zu bilden, was zwar die geometrische Präzision bei komplexen Shapes verringert, aber ein wartbares und wissenschaftlich nutzbares LaTeX-Dokument liefert.
+Im direkten Vergleich zwischen dem Resultat des Referenz-Tools (Abbildung \ref{fig:vergleich_Aspose}) und dem hier entwickelten System (Abbildung \ref{fig:vergleich_mine_converter}) wird der konzeptionelle Gegensatz beider Ansätze deutlich. Während das Vergleichstool eine pixelgenaue, aber nicht editierbare Repräsentation erzielt, fokussiert sich das entwickelte System auf die Wiederherstellung logischer Strukturen. Obwohl der LLM-basierte Ansatz die ursprüngliche Designstruktur nicht identisch reproduziert, bleibt die semantische Informationsdichte, insbesondere bei Texten und Bildern, erhalten. Das Resultat ist ein wissenschaftlich nutzbares {LaTeX}-Dokument, das im Gegensatz zur rein visuellen Kopie eine einfache manuelle Weiterverarbeitung ermöglicht.
+
+\begin{figure}[H]
+	\centering
+	
+	\caption{Resultat des Aspose-Konverters (koordinatenbasiert)}
+	\includegraphics[width=0.9\textwidth]{img/vergleich_Aspose.png}
+	\label{fig:vergleich_Aspose}
+	
+	\vspace{2em} 
+	
+	
+	\caption{Resultat des eigenen Systems (semantisch strukturiert)}
+	\includegraphics[width=0.9\textwidth]{img/vergleich_mine_converter.png}
+	\label{fig:vergleich_mine_converter}
+\end{figure}
 
 \section{Fazit und Ausblick}
 \label{sec:conclusion}
