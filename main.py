@@ -2,19 +2,12 @@ import sys
 import asyncio
 from pathlib import Path
 from datetime import datetime
-import pipeline
-from utils import get_and_create_next_run_dir, RED,GREEN,YELLOW,RESET
+import helper.pipeline as pipeline
+from helper.utils import get_and_create_next_run_dir, RED,GREEN,YELLOW,RESET
 
 class Config:
-    PPTX_INPUT = Path('./input/Algorithmik.pptx')
-    RULES_FILE = 'converting_rules.yaml'
+    PPTX_INPUT = Path('./input/Video.pptx')
     TEX_FILENAME = "document"
-    
-    TIMESTAMP = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    
-    SKIP_EXTRACTION = False 
-    
-    EXISTING_JSON_PATH = Path("./output/2025-12-04_12-06-51/Algorithmik_cleaned.json") 
     
     # ---------------------
     # DIRECTORY STRUCTURE
@@ -25,17 +18,8 @@ class Config:
     MEDIA_OUTPUT_DIR = RESULTS_DIR / 'extracted_media'
     JSON_OUTPUT_DIR = RESULTS_DIR / 'json_data'
 
-    if SKIP_EXTRACTION:
-        # Lese vom alten Pfad
-        RAW_JSON_INPUT = EXISTING_JSON_PATH
-    else:
-        # Speichere das neue rohe JSON in den neuen JSON-Ordner
-        RAW_JSON_INPUT = JSON_OUTPUT_DIR / (PPTX_INPUT.stem + '.json')
-
-    # Das Cleaned JSON kommt IMMER in den aktuellen Run-Ordner (JSON Subfolder)
+    RAW_JSON_INPUT = JSON_OUTPUT_DIR / (PPTX_INPUT.stem + '.json')
     CLEANED_JSON_OUTPUT = JSON_OUTPUT_DIR / (PPTX_INPUT.stem + "_cleaned.json")
-    
-
  
     AGENT_LLM_MODEL = 'qwen2.5-coder:7b' 
     # AGENT_LLM_MODEL = 'qwen3:8b' 
@@ -52,12 +36,7 @@ async def run_pipeline():
     Config.setup_directories()
 
     try:
-        # Step 0: Extraction (Optional)
-        if not Config.SKIP_EXTRACTION:
-            await pipeline.step_extract_structure(Config)
-        else:
-            print(f"Skipping PPTX extraction. Using existing JSON: {Config.RAW_JSON_INPUT}")
-
+        await pipeline.step_extract_structure(Config)
 
         pipeline.step_extract_media(Config)
         pipeline.step_process_and_optimize_data(Config)

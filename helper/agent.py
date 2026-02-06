@@ -1,20 +1,30 @@
 import json
 import ollama
 import re
-import yaml 
-from pathlib import Path
+from helper.utils import RED,RESET, repair_latex_output
 
-from utils import repair_latex_output
+def cut_latex_content(text: str) -> str:
+    """
+    Removes Markdown code block wrappers to extract raw LaTeX content.
 
-def extract_latex_content(text):
-    """Entfernt Markdown ```latex Wrapper"""
+    Searches for content enclosed in triple backticks (optionally tagged with 'latex') 
+    and returns the inner text. If no wrapper is found, returns the original text 
+    stripped of leading/trailing whitespace.
+    """
     pattern = r"```(?:latex)?\s*(.*?)\s*```"
     match = re.search(pattern, text, re.DOTALL)
     if match:
         return match.group(1)
     return text.strip()
        
-def load_conversion_rules():
+def load_conversion_rules() -> str:
+    """
+    Returns the strict system prompt rules for converting JSON slide elements into LaTeX.
+
+    The returned string defines the required LaTeX structure (frames, textblocks), 
+    alignment logic per element type, and specific rendering syntax for media, 
+    tables, and code blocks.
+    """
     return r"""
 You are a specialized LaTeX Beamer Generator.
 You convert a provided JSON structure of a presentation slide into valid, compilable LaTeX code using the 'textpos' package for absolute positioning.
@@ -221,7 +231,17 @@ Output 8:
 \end{textblock}
 """
 
-def generate_single_slide_latex(slide_data, config):
+import json
+import ollama
+
+def generate_single_slide_latex(slide_data: dict, config) -> str:
+    """
+    Generates LaTeX code for a single slide using an LLM.
+
+    Constructs a prompt based on strict conversion rules and the provided JSON slide data.
+    Calls the configured LLM model to generate the LaTeX code, then applies post-processing 
+    repairs and cleanup to ensure valid output.
+    """
     slide_num = slide_data.get('slide_number', '?')
     
     rules_block = load_conversion_rules()
@@ -249,7 +269,8 @@ def generate_single_slide_latex(slide_data, config):
         response = ollama.chat(model=config.AGENT_LLM_MODEL, messages=messages)
         content = response['message']['content']
         content = repair_latex_output(content)
-        return extract_latex_content(content)
+        return cut_latex_content(content)
+        
     except Exception as e:
-        print(f"Error generating Slide {slide_num}: {e}")
+        print(f"{RED}Error generating Slide {slide_num}: {e}{RESET}")
         return f"% ERROR Slide {slide_num}\n\\begin{{frame}}{{Error}}\nGeneration failed.\n\\end{{frame}}"

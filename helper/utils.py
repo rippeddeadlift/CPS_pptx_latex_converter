@@ -1,11 +1,9 @@
 
 import subprocess
 from pathlib import Path
-import sys, re
+import sys, re, json
 from collections import Counter
 from pptx import Presentation
-import json
-from extracter.metadata_from_pptx import get_institute_heuristic
 
 RESET = "\033[0m"
 RED = "\033[31m"
@@ -13,51 +11,69 @@ GREEN = "\033[32m"
 YELLOW = "\033[33m"
 BLUE = "\033[34m"
 
-def compile_tex_to_pdf(tex_filename, working_dir):
+def compile_tex_to_pdf(tex_filename: str | Path, working_dir: str | Path) -> bool:
     """
-    Kompiliert die .tex Datei.
-    WICHTIG: Führt den Befehl IM working_dir aus (cwd), damit relative Bildpfade funktionieren.
+    Compiles a .tex file to PDF using pdflatex within a specified working directory.
+
+    Prioritizes file existence over the compiler's exit code to determine success.
+    Removes any existing PDF before compilation to prevent false positives, then
+    checks if a new PDF is generated even if pdflatex reports warnings/errors.
     """
-    print(f"Compiling {tex_filename} in {working_dir}...")
-    
+    tex_path = Path(tex_filename)
+    work_dir = Path(working_dir)
+    file_name = tex_path.name
+    pdf_name = tex_path.stem + ".pdf"
+    pdf_full_path = work_dir / pdf_name
+
+    try:
+        if pdf_full_path.exists():
+            pdf_full_path.unlink()
+    except OSError:
+        pass  
+
+    print(f"{BLUE}Compiling {file_name} in {work_dir}...{RESET}")
+
     command = [
         "pdflatex",
         "-interaction=nonstopmode",
-        tex_filename 
+        file_name
     ]
 
     try:
         result = subprocess.run(
             command,
-            cwd=working_dir,  
+            cwd=work_dir,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            check=False 
+            check=False
         )
 
-        if result.returncode == 0:
-            pdf_name = Path(tex_filename).stem + ".pdf"
-            print(f"SUCCESS: PDF generated at {working_dir / pdf_name}")
+        if pdf_full_path.exists():
+            if result.returncode == 0:
+                print(f"{GREEN}SUCCESS: PDF generated at {pdf_full_path}{RESET}")
+            else:
+                print(f"{YELLOW}PDF generated with LaTeX issues at {pdf_full_path}{RESET}")
             return True
         else:
-            print("ERROR: PDF compilation failed.")
-            print("--- LaTeX Error Log (Last 20 lines) ---")
-            lines = result.stdout.splitlines()
-            print("\n".join(lines[-20:]))
+            print(f"{RED}ERROR: PDF compilation failed. No output file.{RESET}")
+            print(f"{YELLOW}--- LaTeX Error Log (Last 20 lines) ---{RESET}")
+            if result.stdout:
+                lines = result.stdout.splitlines()
+                print("\n".join(lines[-20:]))
             return False
 
     except FileNotFoundError:
-        print("CRITICAL ERROR: 'pdflatex' not found.")
-        print("Please install a LaTeX distribution (e.g., MiKTeX on Windows, TeX Live on Linux).")
+        print(f"{RED}CRITICAL ERROR: 'pdflatex' not found.{RESET}")
+        print(f"{YELLOW}Please install a LaTeX distribution (e.g., MiKTeX on Windows, TeX Live on Linux).{RESET}")
         return False
     except Exception as e:
-        print(f"Unexpected error during compilation: {e}")
+        print(f"{RED}Unexpected error during compilation: {e}{RESET}")
         return False
     
 def get_and_create_next_run_dir(base_dir: Path) -> Path:
     """
-    Finds the next available indexed directory (e.g., 'Results/19')
+    Finds the next available indexed directory (e.g., 'Results/1')
     and creates it.
     Returns the Path to the newly created directory.
     """
@@ -83,60 +99,29 @@ def get_and_create_next_run_dir(base_dir: Path) -> Path:
         print(f"{RED}Details: {e}{RESET}")
         sys.exit(1)
 
-def extract_metadata(config) -> dict:
-    """Extrahiert Metadaten robust aus der PPTX oder nutzt Defaults."""
-    try:
-        print("Extracting PPTX metadata...")
-        prs = Presentation(config.PPTX_INPUT)
-        props = prs.core_properties
-        
-        title_text = props.title if props.title else config.PPTX_INPUT.stem
-        author_text = props.author if props.author else "AI Converter"
-        
-        institute_text = props.category if props.category else ""
-        
-        if not institute_text:
-            print("   -> No metadata 'category' found. Trying to guess from Slide Master...")
-            institute_text = get_institute_heuristic(prs, title_text, author_text)
-            
-        if institute_text:
-            institute_text = institute_text.replace('\n', r' \\ ')
 
-        meta = {
-            "title": title_text,
-            "author": author_text,
-            "date": props.created.strftime("%d.%m.%Y") if props.created else r"\today",
-            "institute": institute_text
-        }
-        
-        return meta
 
-    except Exception as e:
-        print(f"{YELLOW}Could not extract metadata: {e}. Using defaults.{RESET}")
-        return {
-            "title": "Presentation", 
-            "author": "LaTeX Converter", 
-            "date": r"\today", 
-            "institute": ""
-        }
 
-def calculate_geometry(bbox, page_width, page_height):
+
+def calculate_geometry(bbox: dict, page_width: float, page_height: float) -> dict | None:
     """
-    Berechnet relative LaTeX-Koordinaten (0.0-1.0).
+    Calculates relative LaTeX coordinates (0.0-1.0).
+    Computes normalized x, y, width, and height based on the bounding box and page dimensions,
+    ensuring values remain within valid page boundaries.
     """
     if not bbox or page_width == 0 or page_height == 0:
         return None
     
-    l = bbox.get('l', 0)
-    t = bbox.get('t', 0)
-    r = bbox.get('r', 0)
-    b = bbox.get('b', 0)
+    left = bbox.get('l', 0)
+    top = bbox.get('t', 0)
+    right = bbox.get('r', 0)
+    bottom = bbox.get('b', 0)
     
-    width_emu = abs(r - l)    
-    height_emu = abs(b - t)    
-    visual_top = min(t, b)
+    width_emu = abs(right - left)    
+    height_emu = abs(bottom - top)    
+    visual_top = min(top, bottom)
     
-    rel_x = l / page_width
+    rel_x = left / page_width
     rel_y = visual_top / page_height
     rel_w = width_emu / page_width
     rel_h = height_emu / page_height
@@ -148,19 +133,33 @@ def calculate_geometry(bbox, page_width, page_height):
         "h": round(max(0.0, min(1.0, rel_h)), 3) 
     }
 
-def is_code_line(line):
-    # Heuristik: erkenne Java/C-artige Zeilen
+def is_code_line(line: str) -> bool:
+    """
+    Determines if a text line likely contains programming code by checking for common syntax tokens.
+    """
     code_tokens = [';', '{', '}', 'int ', 'public ', 'private ', '=', 'while ', 'if ', 'for ']
     return any(token in line for token in code_tokens)
 
-def build_geo_dict(elements):
+def build_geo_dict(elements: list) -> dict:
+    """
+    Groups elements based on their geometry to identify spatially identical items.
+    Returns a dictionary mapping geometry tuples to lists of matching elements.
+    """
     geos = {}
     for i, el in enumerate(elements):
         geo = tuple(sorted(el['geometry'].items()))
         geos.setdefault(geo, []).append((i, el))
     return geos
 
-def group_elements(elements):
+def group_elements(elements: list) -> list:
+    """
+    Groups elements by spatial geometry and semantic type.
+
+    Identifies headers and footers based on vertical position. Detects and merges 
+    consecutive code lines into unified code blocks. Classifies remaining text groups 
+    as lists or plain text paragraphs based on item count and length, aggregating 
+    their geometries and text content accordingly.
+    """
     grouped = []
     used = set()
     geos = build_geo_dict(elements)
@@ -278,7 +277,14 @@ def group_elements(elements):
     return grouped
 
 
-def detect_header_candidate(slides):
+def detect_header_candidate(slides: list) -> tuple | None:
+    """
+    Identifies a recurring header element across multiple slides.
+
+    Analyzes text elements to find content that repeats in the same position on at least
+    70% of the slides. Returns the text and geometry of the longest recurring candidate
+    found, or None if no consistent header is detected.
+    """
     counter = Counter()
     texts = {}
     for slide in slides:
@@ -293,86 +299,89 @@ def detect_header_candidate(slides):
     candidates = [key for key, val in counter.items() if val >= thresh]
     if not candidates:
         return None
-    # Nimm den längsten Text als typischen header
     header_key = max(candidates, key=lambda k: len(k[0]))
     header_text = header_key[0]
     header_geometry = header_key[1]
     return header_text, dict(header_geometry)
 
 
-def remove_auto_header(slides, header_text, header_geometry):
-    new_slides = []
-    for i, slide in enumerate(slides):
-        # Lasse Titelseite unverändert, entferne sonst den Header
-        if i == 0:
-            new_slides.append(slide)
-            continue
-        filtered = []
-        for el in slide['elements']:
-            if (el.get('text', '').strip() == header_text.strip() and
-                all(abs(el['geometry'][k] - header_geometry[k]) < 1e-4 for k in header_geometry)):
-                continue  # Entferne diese Zeile
-            filtered.append(el)
-        slide['elements'] = filtered
-        new_slides.append(slide)
-    return new_slides
 
+def load_slides(json_path: str | Path) -> list | None:
+    """
+    Loads slide data from a JSON file.
 
-
-def inject_header_to_title_slide(slides, header_text):
-    if not slides or not header_text:
-        return slides
-    title_slide = slides[0]
-    # Du kannst es als zusätzlichen "subtitle" eintragen:
-    title_slide['elements'].append({
-        'type': 'subtitle',
-        'text': header_text,
-        'geometry': '<optional: gleiche wie vorher, oder speziel für Titelfolie>',
-    })
-    # oder im LaTeX direkt als \subtitle nutzen, oder als Text-Box
-    return slides
-
-
-def load_slides(json_path):
-    from pathlib import Path
-    if isinstance(json_path, str):
-        json_path = Path(json_path)
-    if not json_path.exists():
-        print(f"[ERROR] JSON not found at {json_path}")
-        return None
-    try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError as e:
-        print(f"[ERROR] JSON file is corrupted: {e}")
+    Verifies the file's existence and attempts to parse it using UTF-8 encoding.
+    Returns the parsed JSON data (typically a list of slides) or None if the file
+    is missing or corrupt, logging errors with colored output.
+    """
+    path_obj = Path(json_path)
+    
+    if not path_obj.exists():
+        print(f"{RED}[ERROR] JSON not found at {path_obj}{RESET}")
         return None
     
-def get_slide_dimensions(pptx_path):
+    try:
+        with open(path_obj, 'r', encoding='utf-8') as f:
+            return json.load(f)
+            
+    except json.JSONDecodeError as e:
+        print(f"{RED}[ERROR] JSON file is corrupted: {e}{RESET}")
+        return None
+    
+def get_slide_dimensions(pptx_path: str) -> tuple[int, int]:
+    """
+    Retrieves the total width and height of the presentation slides in EMUs (English Metric Units).
+    Returns (0, 0) and logs a warning if the file cannot be read.
+    """
     try:
         from pptx import Presentation
         prs = Presentation(pptx_path)
         return prs.slide_width, prs.slide_height
     except Exception as e:
-        print(f"[WARN] Could not load PPTX dimensions: {e}")
+        print(f"{YELLOW}Could not load PPTX dimensions: {e}{RESET}")
         return 0, 0
     
-def enrich_and_group_slides(slides, slide_width, slide_height):
+def enrich_and_group_slides(slides: list, slide_width: int, slide_height: int) -> list:
+    """
+    Processes raw slide data by normalizing element geometry and grouping related items.
+
+    Iterates through every element to convert absolute bounding boxes into relative 
+    LaTeX coordinates (0.0-1.0). Afterwards, it reorganizes the elements into semantic 
+    groups (headers, code blocks, lists) using the grouping logic.
+    """
     for slide in slides:
         elements = slide.get('elements', [])
+        
         for el in elements:
             if 'bbox' in el:
                 geo = calculate_geometry(el['bbox'], slide_width, slide_height)
                 el['geometry'] = geo
                 del el['bbox']
+        
         slide['elements'] = group_elements(elements)
+        
     return slides
 
-def save_json(data, path):
+def save_json(data: dict | list, path: str | Path) -> None:
+    """
+    Saves data to a JSON file with pretty printing.
+    
+    Writes the provided dictionary or list to the specified path using UTF-8 encoding,
+    formatting it with an indentation of 2 spaces for readability and ensuring 
+    non-ASCII characters are preserved.
+    """
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
-def sanitize_latex(llm_text):
+def sanitize_latex(llm_text: str) -> str:
+    """
+    Cleans up malformed LaTeX commands often generated by LLMs.
+
+    Normalizes backslashes by replacing control characters, forward slashes, 
+    or double backslashes before common keywords (begin, end, item) with a 
+    single correct LaTeX backslash.
+    """
     latex = re.sub(r'([\x00-\x1F]|\/)+begin', r'\\begin', llm_text, flags=re.MULTILINE)
     latex = re.sub(r'([\x00-\x1F]|\/)+end', r'\\end', latex, flags=re.MULTILINE)
 
@@ -387,23 +396,24 @@ def sanitize_latex(llm_text):
     return latex
 
 
-def get_union_geometry(elements):
+def get_union_geometry(elements: list) -> dict | None:
     """
-    Berechnet die umschließende Box (Union) für eine Gruppe von Elementen.
-    Erwartet Elemente mit 'geometry': {'x', 'y', 'w', 'h'}.
+    Calculates the union bounding box for a group of elements.
+
+    Iterates through the provided elements to find the minimum x/y coordinates 
+    and the maximum extension to compute a single geometry dictionary ('x', 'y', 'w', 'h') 
+    that encloses all items.
     """
     if not elements:
         return None
 
-    # Initialisierung mit Extremwerten
     min_x = float('inf')
     min_y = float('inf')
-    max_r = float('-inf') # r = x + w (Rechter Rand)
-    max_b = float('-inf') # b = y + h (Unterer Rand)
+    max_r = float('-inf') 
+    max_b = float('-inf') 
 
     for el in elements:
         geo = el.get('geometry', {})
-        # Überspringe Elemente ohne Geometrie
         if not geo: 
             continue
             
@@ -412,13 +422,11 @@ def get_union_geometry(elements):
         w = geo.get('w', 0)
         h = geo.get('h', 0)
         
-        # Min/Max berechnen
         min_x = min(min_x, x)
         min_y = min(min_y, y)
         max_r = max(max_r, x + w)
         max_b = max(max_b, y + h)
 
-    # Die neuen Dimensionen der großen Box
     new_w = max_r - min_x
     new_h = max_b - min_y
 
@@ -431,19 +439,56 @@ def get_union_geometry(elements):
 
 
 
-def repair_latex_output(latex_code):
+def repair_latex_output(latex_code: str) -> str:
     """
-    Repariert typische Flüchtigkeitsfehler von kleinen LLMs.
+    Repairs common hallucinated syntax errors in LLM-generated LaTeX.
+    
+    Specifically targets known issues where models output truncated variable names,
+    such as correcting '\paper' to '\paperheight' in geometry definitions.
     """
-    # 1. Fix: "\paper" statt "\paperheight"
-    # Sucht nach \paper, dem KEIN "height" oder "width" folgt
     latex_code = re.sub(r'\\paper(?!(height|width))', r'\\paperheight', latex_code)
     
-    # 2. Fix: "\paper]" (passiert oft in minipage definitionen)
     latex_code = latex_code.replace(r'\paper]', r'\paperheight]')
     
-    # 3. Fix: Fehlende schließende Klammer bei minipage (Notfall-Fix)
-    # Wenn eine Zeile mit \begin{minipage} anfängt, aber am Ende kaputt aussieht
-    # (Das ist komplexer, aber der \paper Fix löst meistens 99% der Probleme)
     
     return latex_code
+
+from pptx import Presentation
+
+def get_text_alignment_map(pptx_path: str) -> dict:
+    """
+    Scans the presentation for text boxes that simulate bottom alignment via empty lines.
+
+    Identifies text shapes where the user has pressed 'Enter' multiple times (>= 2 empty paragraphs)
+    at the start to push text down. Returns a map of these texts to force 'bottom' alignment
+    in the subsequent conversion process.
+    """
+    prs = Presentation(pptx_path)
+    override_map = {}
+
+    for slide_idx, slide in enumerate(prs.slides):
+        slide_map = {}
+        
+        for shape in slide.shapes:
+            if not shape.has_text_frame or not shape.text.strip():
+                continue
+            
+            tf = shape.text_frame
+            leading_empty_paragraphs = 0
+            
+            for p in tf.paragraphs:
+                if not p.text.strip():
+                    leading_empty_paragraphs += 1
+                else:
+                    break
+            
+            if leading_empty_paragraphs >= 2:
+                clean_key = "".join(shape.text.split()).lower()[:50]
+                
+                if clean_key:
+                    slide_map[clean_key] = "b"
+
+        if slide_map:
+            override_map[slide_idx + 1] = slide_map
+            
+    return override_map
