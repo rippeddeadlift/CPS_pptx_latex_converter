@@ -8,44 +8,47 @@ Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Database file #1: Literaturverzeichnis.bib
-You've used 2 entries,
+Warning--empty edition in PythonPptxDoc
+Warning--empty address in PythonPptxDoc
+You've used 13 entries,
             4728 wiz_defined-function locations,
-            898 strings with 6632 characters,
-and the built_in function-call counts, 943 in all, are:
-= -- 90
-> -- 20
-< -- 11
-+ -- 15
-- -- 6
-* -- 60
-:= -- 174
-add.period$ -- 3
-call.type$ -- 2
-change.case$ -- 8
-chr.to.int$ -- 2
-cite$ -- 2
-duplicate$ -- 34
-empty$ -- 80
-format.name$ -- 12
-if$ -- 194
+            957 strings with 7930 characters,
+and the built_in function-call counts, 5473 in all, are:
+= -- 503
+> -- 130
+< -- 39
++ -- 65
+- -- 39
+* -- 353
+:= -- 979
+add.period$ -- 24
+call.type$ -- 13
+change.case$ -- 52
+chr.to.int$ -- 13
+cite$ -- 15
+duplicate$ -- 212
+empty$ -- 487
+format.name$ -- 78
+if$ -- 1162
 int.to.chr$ -- 1
 int.to.str$ -- 1
-missing$ -- 10
-newline$ -- 28
-num.names$ -- 8
-pop$ -- 12
+missing$ -- 72
+newline$ -- 94
+num.names$ -- 52
+pop$ -- 88
 preamble$ -- 1
-purify$ -- 12
+purify$ -- 78
 quote$ -- 0
-skip$ -- 46
+skip$ -- 283
 stack$ -- 0
-substring$ -- 33
-swap$ -- 4
-text.length$ -- 2
+substring$ -- 182
+swap$ -- 26
+text.length$ -- 13
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 21
-warning$ -- 0
-while$ -- 8
+type$ -- 166
+warning$ -- 2
+while$ -- 52
 width$ -- 0
-write$ -- 43
+write$ -- 198
+(There were 2 warnings)
