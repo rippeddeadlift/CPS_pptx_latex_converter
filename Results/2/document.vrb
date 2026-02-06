@@ -1,0 +1,31 @@
+\begin{textblock}{0.812}(0.112, 0.043)
+    \begin{minipage}[t][0.151\paperheight]{\linewidth}
+      \textbf{Quellen}
+    \end{minipage}
+  \end{textblock}
+
+  \begin{textblock}{0.798}(0.112, 0.338)
+    \begin{minipage}[t][0.537\paperheight]{\linewidth}
+      \scriptsize
+      \begin{itemize}
+        \item https://www.leifiphysik.de/mechanik/impulserhaltung-und-stoesse/aufgabe/geschwindigkeiten-nach-einem-zentralen-elastischen-stoss
+        \item https://www.leifiphysik.de/mechanik/kreisbewegung/grundwissen/bahngeschwindigkeit-und-winkelgeschwindigkeit
+        \item https://www.mdpi.com/applsci/applsci-10-07636/article_deploy/html/images/applsci-10-07636-g001.png
+        \item https://gamedev.stackexchange.com/questions/192400/in-games-physics-engines-what-is-tunneling-also-known-as-the-bullet-through
+      \end{itemize}
+    \end{minipage}
+  \end{textblock}
+
+  \begin{textblock}{0.225}(0.736, 0.941)
+    \begin{minipage}[b][0.053\paperheight]{\linewidth}
+      \raggedright
+      \fontsize{3}{3.3}\selectfont 16.11.2025
+    \end{minipage}
+  \end{textblock}
+
+  \begin{textblock}{0.037}(0.96, 0.941)
+    \begin{minipage}[b][0.053\paperheight]{\linewidth}
+      \raggedright
+      \fontsize{3}{3.3}\selectfont 7
+    \end{minipage}
+  \end{textblock}

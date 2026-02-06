@@ -1,0 +1,99 @@
+\begin{textblock}{0.885}(0.099, 0.022)
+  \begin{minipage}[t][0.031\paperheight]{\linewidth}
+    \raggedright
+    \fontsize{3}{3.3}\selectfont Algorithmik – Laufzeitanalyse von Algorithmen durch Asymptotische Notation
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.12}(0.048, 0.335)
+  \begin{minipage}[t][0.161\paperheight]{\linewidth}
+    CODE
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.184}(0.185, 0.39)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    Code Modellierung
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.136}(0.401, 0.335)
+  \begin{minipage}[t][0.161\paperheight]{\linewidth}
+    LAUFZEIT\\FUNKTION
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.063}(0.226, 0.252)
+  \begin{minipage}[t][0.111\paperheight]{\linewidth}
+    1
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.219}(0.015, 0.507)
+  \begin{minipage}[t][0.139\paperheight]{\linewidth}
+    \begin{lstlisting}[language=Java, basicstyle=\ttfamily\scriptsize]
+for (i = 0; i < n; i++) {
+a[i] = 1;
+b[i] = 2;
+}
+    \end{lstlisting}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.101}(0.417, 0.503)
+  \begin{minipage}[t][0.058\paperheight]{\linewidth}
+    f(n) = 2n
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.139}(0.598, 0.527)
+  \begin{minipage}[t][0.161\paperheight]{\linewidth}
+    O-Notation\\Ω-Notation\\Θ-Notation
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.149}(0.606, 0.363)
+  \begin{minipage}[t][0.103\paperheight]{\linewidth}
+    Asymptotische\\Analyse
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.063}(0.62, 0.192)
+  \begin{minipage}[t][0.111\paperheight]{\linewidth}
+    2
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.071}(0.931, 0.248)
+  \begin{minipage}[t][0.067\paperheight]{\linewidth}
+    O(n)
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.071}(0.931, 0.447)
+  \begin{minipage}[t][0.067\paperheight]{\linewidth}
+    Θ(n)
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.449}(0.469, 0.713)
+  \begin{minipage}[t][0.135\paperheight]{\linewidth}
+    Wir haben gerade dieses Werkzeug fertiggestellt, um eine Funktion anhand einiger nützlicher Schranken zu charakterisieren!
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.373}(0.054, 0.713)
+  \begin{minipage}[t][0.135\paperheight]{\linewidth}
+    Schauen wir uns dieses Werkzeug nun genauer an. Wie genau kommen wir zu dieser Funktion?
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.886}(0.099, 0.076)
+  \begin{minipage}[t][0.131\paperheight]{\linewidth}
+    \textbf{Analyse von Algorithmen}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.231}(0.564, 0.926)
+  \begin{minipage}[b][0.032\paperheight]{\linewidth}
+    \raggedright
+    Quelle: Data Structures and Algorithms (CSE 373), University of Washington, Spring 2022
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.106}(0.099, 0.877)
+  \begin{minipage}[b][0.026\paperheight]{\linewidth}
+    \raggedright
+    05.02.2026
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.106}(0.099, 0.928)
+  \begin{minipage}[b][0.031\paperheight]{\linewidth}
+    \raggedright
+    Seite 8
+  \end{minipage}
+\end{textblock}

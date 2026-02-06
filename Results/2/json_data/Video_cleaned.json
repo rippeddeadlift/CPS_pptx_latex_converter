@@ -1,0 +1,386 @@
+[
+  {
+    "slide_number": 1,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Kollisionsdetektion und -antwort",
+        "geometry": {
+          "x": 0.108,
+          "y": 0.107,
+          "w": 0.825,
+          "h": 0.427
+        }
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.111,
+          "y": 0.71,
+          "w": 0.821,
+          "h": 0.213
+        },
+        "text": "SSDS 24/25 Kurilin, Pivovar",
+        "align": "t",
+        "fontsize": "small"
+      }
+    ]
+  },
+  {
+    "slide_number": 2,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Inhaltsverzeichnis",
+        "geometry": {
+          "x": 0.112,
+          "y": 0.043,
+          "w": 0.812,
+          "h": 0.151
+        }
+      },
+      {
+        "type": "list",
+        "geometry": {
+          "x": 0.112,
+          "y": 0.338,
+          "w": 0.798,
+          "h": 0.537
+        },
+        "items": [
+          "Was ist Kollisionsdetektion?",
+          "Line of Action",
+          "Zentraler elastischer Stoß",
+          "Rotation",
+          "Probleme bei Kollisionsdetektion",
+          "Algorithmen"
+        ],
+        "align": "t",
+        "fontsize": "scriptsize"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.736,
+          "y": 0.941,
+          "w": 0.225,
+          "h": 0.053
+        },
+        "text": "16.11.2025",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.96,
+          "y": 0.941,
+          "w": 0.037,
+          "h": 0.053
+        },
+        "text": "2",
+        "fontsize": "3pt"
+      }
+    ]
+  },
+  {
+    "slide_number": 3,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Kollisionsdetektion bei balls2D",
+        "geometry": {
+          "x": 0.093,
+          "y": 0.073,
+          "w": 0.437,
+          "h": 0.24
+        }
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.094,
+          "y": 0.351,
+          "w": 0.436,
+          "h": 0.515
+        },
+        "text": "Gehen über alle Bälle, berechnen die Distanz zwischen den Bällen und wenn die Distanz kleiner ist als die Summe beider Radien dann wird eine Kollision erkannt",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.735,
+          "y": 0.942,
+          "w": 0.225,
+          "h": 0.053
+        },
+        "text": "16.11.2025",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.96,
+          "y": 0.942,
+          "w": 0.037,
+          "h": 0.053
+        },
+        "text": "3",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "picture",
+        "label": "picture",
+        "image_path": "extracted_media/image_1.png",
+        "geometry": {
+          "x": 0.553,
+          "y": 0.351,
+          "w": 0.449,
+          "h": 0.381
+        }
+      },
+      {
+        "type": "picture",
+        "filename": "image_1.png",
+        "path": "extracted_media/image_1.png",
+        "geometry": {
+          "x": 0.553,
+          "y": 0.351,
+          "w": 0.449,
+          "h": 0.381
+        }
+      }
+    ]
+  },
+  {
+    "slide_number": 4,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Was ist Kollisionsantwort?",
+        "geometry": {
+          "x": 0.093,
+          "y": 0.073,
+          "w": 0.437,
+          "h": 0.24
+        }
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.094,
+          "y": 0.351,
+          "w": 0.436,
+          "h": 0.515
+        },
+        "text": "Wenn eine Kollision erkannt wird, muss diese aufgelöst werden. Das gelingt dadurch das man die Positionen der Bälle auflöst, einen neuen Bewegungsvektor berechnet und eine neue Velocity berechnet mit der die Bälle in die Richtung des neuen Bewegungsvektors bewegt werden",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.735,
+          "y": 0.942,
+          "w": 0.225,
+          "h": 0.053
+        },
+        "text": "16.11.2025",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.96,
+          "y": 0.942,
+          "w": 0.037,
+          "h": 0.053
+        },
+        "text": "4",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "picture",
+        "label": "picture",
+        "image_path": "extracted_media/image_2.png",
+        "geometry": {
+          "x": 0.58,
+          "y": 0.28,
+          "w": 0.342,
+          "h": 0.445
+        }
+      },
+      {
+        "type": "picture",
+        "filename": "image_2.png",
+        "path": "extracted_media/image_2.png",
+        "geometry": {
+          "x": 0.58,
+          "y": 0.28,
+          "w": 0.342,
+          "h": 0.445
+        }
+      }
+    ]
+  },
+  {
+    "slide_number": 5,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Abfragen bei Quadtree",
+        "geometry": {
+          "x": 0.054,
+          "y": 0.403,
+          "w": 0.236,
+          "h": 0.448
+        }
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.736,
+          "y": 0.941,
+          "w": 0.225,
+          "h": 0.053
+        },
+        "text": "11/16/2025",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.96,
+          "y": 0.941,
+          "w": 0.037,
+          "h": 0.053
+        },
+        "text": "5",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "video",
+        "filename": "media_3.mp4",
+        "path": "extracted_media/media_3.mp4",
+        "poster_path": "extracted_media/media_3_poster.png",
+        "geometry": {
+          "x": 0.369,
+          "y": 0.204,
+          "w": 0.593,
+          "h": 0.593
+        }
+      }
+    ]
+  },
+  {
+    "slide_number": 6,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Fragen?",
+        "geometry": {
+          "x": 0.068,
+          "y": 0.086,
+          "w": 0.347,
+          "h": 0.494
+        }
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.533,
+          "y": 0.095,
+          "w": 0.399,
+          "h": 0.809
+        },
+        "text": "Vielen Dank für Ihre Aufmerksamkeit",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.736,
+          "y": 0.941,
+          "w": 0.225,
+          "h": 0.053
+        },
+        "text": "16.11.2025",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.96,
+          "y": 0.941,
+          "w": 0.037,
+          "h": 0.053
+        },
+        "text": "6",
+        "fontsize": "3pt"
+      }
+    ]
+  },
+  {
+    "slide_number": 7,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Quellen",
+        "geometry": {
+          "x": 0.112,
+          "y": 0.043,
+          "w": 0.812,
+          "h": 0.151
+        }
+      },
+      {
+        "type": "list",
+        "geometry": {
+          "x": 0.112,
+          "y": 0.338,
+          "w": 0.798,
+          "h": 0.537
+        },
+        "items": [
+          "https://www.leifiphysik.de/mechanik/impulserhaltung-und-stoesse/aufgabe/geschwindigkeiten-nach-einem-zentralen-elastischen-stoss",
+          "https://www.leifiphysik.de/mechanik/kreisbewegung/grundwissen/bahngeschwindigkeit-und-winkelgeschwindigkeit",
+          "https://www.mdpi.com/applsci/applsci-10-07636/article_deploy/html/images/applsci-10-07636-g001.png",
+          "https://gamedev.stackexchange.com/questions/192400/in-games-physics-engines-what-is-tunneling-also-known-as-the-bullet-through"
+        ],
+        "align": "t",
+        "fontsize": "scriptsize"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.736,
+          "y": 0.941,
+          "w": 0.225,
+          "h": 0.053
+        },
+        "text": "16.11.2025",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.96,
+          "y": 0.941,
+          "w": 0.037,
+          "h": 0.053
+        },
+        "text": "7",
+        "fontsize": "3pt"
+      }
+    ]
+  }
+]
