@@ -8,3 +8,8 @@ __pycache__/
 
 # Ignore system files
 .DS_Store
+
+# --- Bericht Folder Rules ---
+Bericht/*
+
+!Bericht/*.pdf
