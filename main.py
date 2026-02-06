@@ -6,7 +6,7 @@ import helper.pipeline as pipeline
 from helper.utils import get_and_create_next_run_dir, RED,GREEN,YELLOW,RESET
 
 class Config:
-    PPTX_INPUT = Path('./input/Video.pptx')
+    PPTX_INPUT = Path('./input/Algorithmik.pptx')
     TEX_FILENAME = "document"
     
     # ---------------------

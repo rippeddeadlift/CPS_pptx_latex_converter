@@ -1,11 +1,11 @@
 # PPTX to LaTeX Beamer Converter
 
-Konvertiert PowerPoint-Präsentationen vollautomatisch in LaTeX Beamer-Folien inkl. Bilder und Videos.
+Konvertiert PowerPoint-Präsentationen in LaTeX Beamer-Folien inkl. Bilder und Videos.
 
 ## Voraussetzungen
 * **Python 3.10+**
-* **LaTeX:** TeX Live oder MiKTeX (Befehl `pdflatex` muss verfügbar sein).
-* **Ollama:** Muss lokal laufen.
+* **LaTeX:** TeX Live
+* **Ollama:** Muss lokal laufen
 * **Videowiedergabe:** Adobe Acrobat Reader 
 
 ## Installation
