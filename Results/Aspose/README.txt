@@ -1,0 +1,1 @@
+﻿ALLE \includegraphics Befehle sind auskommentiert.
