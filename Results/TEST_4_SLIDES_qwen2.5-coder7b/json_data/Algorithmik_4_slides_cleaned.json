@@ -1,0 +1,844 @@
+[
+  {
+    "slide_number": 1,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Lernraum I: Abstrakte Datentypen, Datenstrukturen und Asymptotische Notation",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.076,
+          "w": 0.886,
+          "h": 0.131
+        }
+      },
+      {
+        "type": "list",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.226,
+          "w": 0.886,
+          "h": 0.63
+        },
+        "items": [
+          "Abstrakte Datentypen",
+          "Liste, Stapel, Warteschlange, Tabelle (Dictionary)",
+          "Datenstrukturen",
+          "Array, Verkettete Liste",
+          "Implementierungen der Abstrakten Datentypen mit den Datenstrukturen …",
+          "Array",
+          "Verkettete Listen",
+          "Analyse von Laufzeit und Speicherbedarf der Implementierungen",
+          "O-Notation",
+          "Laufzeitanalyse von Algorithmen durch Asymptotische Notation",
+          "O-Notation, Ω-Notation, Θ-Notation",
+          "Fallanalyse: Worst Case, Best Case Analyse",
+          "Laufzeitanalyse von Rekursiven Algorithmen durch Asymptotische Notation"
+        ],
+        "align": "t",
+        "fontsize": "scriptsize"
+      },
+      {
+        "type": "header",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.022,
+          "w": 0.885,
+          "h": 0.031
+        },
+        "text": "Algorithmik – Laufzeitanalyse von Algorithmen durch Asymptotische Notation",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.877,
+          "w": 0.106,
+          "h": 0.026
+        },
+        "text": "06.03.2026",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.928,
+          "w": 0.106,
+          "h": 0.031
+        },
+        "text": "Seite 1",
+        "fontsize": "3pt"
+      }
+    ]
+  },
+  {
+    "slide_number": 2,
+    "elements": [
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Klassifikation der Wachstumsordnung",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.076,
+          "w": 0.886,
+          "h": 0.131
+        }
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.226,
+          "w": 0.886,
+          "h": 0.63
+        },
+        "text": "Wachstumsordnung: Eine Kategorie der Algorithmeneffizienz, die auf dem Verhältnis des Algorithmus zur Eingabegröße n basiert.",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "header",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.022,
+          "w": 0.885,
+          "h": 0.031
+        },
+        "text": "Algorithmik – Laufzeitanalyse von Algorithmen durch Asymptotische Notation",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.877,
+          "w": 0.106,
+          "h": 0.026
+        },
+        "text": "06.03.2026",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.928,
+          "w": 0.106,
+          "h": 0.031
+        },
+        "text": "Seite 2",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.615,
+          "y": 0.934,
+          "w": 0.18,
+          "h": 0.032
+        },
+        "text": "https://www.bigocheatsheet.com/",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.564,
+          "y": 0.897,
+          "w": 0.231,
+          "h": 0.032
+        },
+        "text": "Quelle: Data Structures and Algorithms (CSE 373), University of Washington, Spring 2022",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "table",
+        "label": "table",
+        "table_rows": [
+          [
+            "Description",
+            "O-Notation",
+            "Runtime if you double n",
+            "Example Algorithm"
+          ],
+          [
+            "constant",
+            "O(1)",
+            "unchanged",
+            "Accessing an index of an array"
+          ],
+          [
+            "logarithmic",
+            "O(log2 n)",
+            "increases slightly",
+            "Binary search"
+          ],
+          [
+            "linear",
+            "O(n)",
+            "doubles",
+            "Looping over an array"
+          ],
+          [
+            "log-linear",
+            "O(n log2 n)",
+            "slightly more than doubles",
+            "Merge sort algorithm"
+          ],
+          [
+            "quadratic",
+            "O(n2)",
+            "quadruples",
+            "Nested loops!"
+          ],
+          [
+            "...",
+            "...",
+            "...",
+            "..."
+          ],
+          [
+            "exponential",
+            "O(2n)",
+            "multiplies drastically",
+            "Fibonacci with recursion"
+          ]
+        ],
+        "geometry": {
+          "x": 0.027,
+          "y": 0.35,
+          "w": 0.517,
+          "h": 0.513
+        }
+      },
+      {
+        "type": "picture",
+        "label": "picture",
+        "image_path": "extracted_media/image_1.png",
+        "geometry": {
+          "x": 0.554,
+          "y": 0.363,
+          "w": 0.431,
+          "h": 0.495
+        }
+      },
+      {
+        "type": "picture",
+        "filename": "image_1.png",
+        "path": "extracted_media/image_1.png",
+        "geometry": {
+          "x": 0.554,
+          "y": 0.363,
+          "w": 0.431,
+          "h": 0.495
+        }
+      }
+    ]
+  },
+  {
+    "slide_number": 3,
+    "elements": [
+      {
+        "type": "codeblock",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.226,
+          "w": 0.886,
+          "h": 0.63
+        },
+        "text": "\\begin{lstlisting}[language=Java]\npublic int method2(int n) {\nint sum = 0;\nint i = 0;\nwhile (i < n) {\nint j = 0;\nwhile (j < n) {\nif (j % 2 == 0) {\n// do nothing\n}\nsum = sum + (i * 3) + j;\nj = j + 1;\n}\ni = i + 1;\n} return sum;\n}\n\\end{lstlisting}"
+      },
+      {
+        "type": "header",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.022,
+          "w": 0.885,
+          "h": 0.031
+        },
+        "text": "Algorithmik – Laufzeitanalyse von Algorithmen durch Asymptotische Notation",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.309,
+          "y": 0.27,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+1",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.288,
+          "y": 0.317,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+1",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.351,
+          "y": 0.361,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+1",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.483,
+          "y": 0.497,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+2",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.319,
+          "y": 0.813,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+1",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.631,
+          "y": 0.575,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+9",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.627,
+          "y": 0.529,
+          "w": 0.035,
+          "h": 0.054
+        },
+        "text": "*n\n*n",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.624,
+          "y": 0.456,
+          "w": 0.15,
+          "h": 0.094
+        },
+        "text": "Innere Schleife läuft n-mal",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.704,
+          "y": 0.142,
+          "w": 0.238,
+          "h": 0.168
+        },
+        "text": "f(n) = (9n+4)n + 3",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.339,
+          "y": 0.409,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+1",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.405,
+          "y": 0.451,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+1",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.393,
+          "y": 0.677,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+2",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.331,
+          "y": 0.765,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+2",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.539,
+          "y": 0.631,
+          "w": 0.042,
+          "h": 0.044
+        },
+        "text": "+4",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.819,
+          "y": 0.562,
+          "w": 0.083,
+          "h": 0.044
+        },
+        "text": "9n + 4",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.843,
+          "y": 0.446,
+          "w": 0.143,
+          "h": 0.094
+        },
+        "text": "Äußere Schleife läuft n-mal",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "text",
+        "label": "title",
+        "text": "Code Modellierung  Beispiel 2",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.076,
+          "w": 0.886,
+          "h": 0.131
+        }
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.615,
+          "y": 0.934,
+          "w": 0.18,
+          "h": 0.032
+        },
+        "text": "CSE 373 20 AU – SCHAFER",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.564,
+          "y": 0.897,
+          "w": 0.231,
+          "h": 0.032
+        },
+        "text": "Quelle: Data Structures and Algorithms (CSE 373), University of Washington, Spring 2022",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.877,
+          "w": 0.106,
+          "h": 0.026
+        },
+        "text": "06.03.2026",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.928,
+          "w": 0.106,
+          "h": 0.031
+        },
+        "text": "Seite 3",
+        "fontsize": "3pt"
+      }
+    ]
+  },
+  {
+    "slide_number": 4,
+    "elements": [
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.473,
+          "y": 0.587,
+          "w": 0.512,
+          "h": 0.064
+        },
+        "text": "Θ-Notation",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "label": "title",
+        "text": "O-, Ω- und Θ-Notation Übung",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.076,
+          "w": 0.886,
+          "h": 0.131
+        }
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.226,
+          "w": 0.886,
+          "h": 0.63
+        },
+        "text": "Welche der folgenden Funktionen ist in O(n²)? Ω(n²)? Θ(n²)?",
+        "align": "t",
+        "fontsize": "small"
+      },
+      {
+        "type": "header",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.022,
+          "w": 0.885,
+          "h": 0.031
+        },
+        "text": "Algorithmik – Laufzeitanalyse von Algorithmen durch Asymptotische Notation",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.1,
+          "y": 0.286,
+          "w": 0.03,
+          "h": 0.054
+        },
+        "text": "a.",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.1,
+          "y": 0.399,
+          "w": 0.03,
+          "h": 0.054
+        },
+        "text": "b.",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.1,
+          "y": 0.498,
+          "w": 0.028,
+          "h": 0.054
+        },
+        "text": "c.",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.1,
+          "y": 0.612,
+          "w": 0.03,
+          "h": 0.054
+        },
+        "text": "d.",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.1,
+          "y": 0.722,
+          "w": 0.03,
+          "h": 0.054
+        },
+        "text": "e.",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.12,
+          "y": 0.342,
+          "w": 0.132,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ O(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.12,
+          "y": 0.45,
+          "w": 0.129,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ O(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.12,
+          "y": 0.553,
+          "w": 0.132,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ O(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.12,
+          "y": 0.675,
+          "w": 0.124,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ O(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.235,
+          "y": 0.677,
+          "w": 0.116,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ Ω(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.122,
+          "y": 0.786,
+          "w": 0.122,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ Ω(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.353,
+          "y": 0.677,
+          "w": 0.116,
+          "h": 0.054
+        },
+        "text": "f(n) ∈ Θ(n2)",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.615,
+          "y": 0.934,
+          "w": 0.18,
+          "h": 0.032
+        },
+        "text": "CSE 373 20 SP – CHUN & CHAMPION",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.564,
+          "y": 0.897,
+          "w": 0.231,
+          "h": 0.032
+        },
+        "text": "Quelle: Data Structures and Algorithms (CSE 373), University of Washington, Spring 2022",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.609,
+          "y": 0.066,
+          "w": 0.375,
+          "h": 0.064
+        },
+        "text": "O-Notation",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "text",
+        "geometry": {
+          "x": 0.609,
+          "y": 0.329,
+          "w": 0.375,
+          "h": 0.064
+        },
+        "text": "Ω-Notation",
+        "align": "t",
+        "fontsize": "tiny"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.877,
+          "w": 0.106,
+          "h": 0.026
+        },
+        "text": "06.03.2026",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "footer",
+        "geometry": {
+          "x": 0.099,
+          "y": 0.928,
+          "w": 0.106,
+          "h": 0.031
+        },
+        "text": "Seite 4",
+        "fontsize": "3pt"
+      },
+      {
+        "type": "picture",
+        "label": "picture",
+        "image_path": "extracted_media/image_2.png",
+        "geometry": {
+          "x": 0.613,
+          "y": 0.394,
+          "w": 0.368,
+          "h": 0.164
+        }
+      },
+      {
+        "type": "picture",
+        "filename": "image_2.png",
+        "path": "extracted_media/image_2.png",
+        "geometry": {
+          "x": 0.613,
+          "y": 0.394,
+          "w": 0.368,
+          "h": 0.164
+        }
+      },
+      {
+        "type": "picture",
+        "label": "picture",
+        "image_path": "extracted_media/image_3.png",
+        "geometry": {
+          "x": 0.609,
+          "y": 0.131,
+          "w": 0.375,
+          "h": 0.166
+        }
+      },
+      {
+        "type": "picture",
+        "filename": "image_3.png",
+        "path": "extracted_media/image_3.png",
+        "geometry": {
+          "x": 0.609,
+          "y": 0.131,
+          "w": 0.375,
+          "h": 0.166
+        }
+      },
+      {
+        "type": "picture",
+        "label": "picture",
+        "image_path": "extracted_media/image_4.png",
+        "geometry": {
+          "x": 0.473,
+          "y": 0.652,
+          "w": 0.512,
+          "h": 0.209
+        }
+      },
+      {
+        "type": "picture",
+        "filename": "image_4.png",
+        "path": "extracted_media/image_4.png",
+        "geometry": {
+          "x": 0.473,
+          "y": 0.652,
+          "w": 0.512,
+          "h": 0.209
+        }
+      }
+    ]
+  }
+]

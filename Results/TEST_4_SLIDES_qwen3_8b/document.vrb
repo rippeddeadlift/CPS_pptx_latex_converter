@@ -1,0 +1,149 @@
+\begin{textblock}{0.512}(0.473, 0.587)
+  \begin{minipage}[t][0.064\paperheight]{\linewidth}
+    {\tiny Θ-Notation}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.886}(0.099, 0.076)
+  \begin{minipage}[t][0.131\paperheight]{\linewidth}
+    \textbf{O-, Ω- und Θ-Notation Übung}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.886}(0.099, 0.226)
+  \begin{minipage}[t][0.63\paperheight]{\linewidth}
+    {\small Welche der folgenden Funktionen ist in O(n²)? Ω(n²)? Θ(n²)?}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.885}(0.099, 0.022)
+  \begin{minipage}[b][0.031\paperheight]{\linewidth}
+    \fontsize{3}{3.3}\selectfont
+    \textbf{Algorithmik – Laufzeitanalyse von Algorithmen durch Asymptotische Notation}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.03}(0.1, 0.286)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny a.}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.03}(0.1, 0.399)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny b.}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.028}(0.1, 0.498)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny c.}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.03}(0.1, 0.612)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny d.}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.03}(0.1, 0.722)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny e.}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.132}(0.12, 0.342)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ O(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.129}(0.12, 0.45)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ O(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.132}(0.12, 0.553)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ O(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.124}(0.12, 0.675)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ O(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.116}(0.235, 0.677)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ Ω(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.122}(0.122, 0.786)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ Ω(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.116}(0.353, 0.677)
+  \begin{minipage}[t][0.054\paperheight]{\linewidth}
+    {\tiny f(n) ∈ Θ(n2)}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.18}(0.615, 0.934)
+  \begin{minipage}[b][0.032\paperheight]{\linewidth}
+    \raggedright
+    \fontsize{3}{3.3}\selectfont
+    CSE 373 20 SP – CHUN & CHAMPION
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.231}(0.564, 0.897)
+  \begin{minipage}[b][0.032\paperheight]{\linewidth}
+    \raggedright
+    \fontsize{3}{3.3}\selectfont
+    Quelle: Data Structures and Algorithms (CSE 373), University of Washington, Spring 2022
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.375}(0.609, 0.066)
+  \begin{minipage}[t][0.064\paperheight]{\linewidth}
+    {\tiny O-Notation}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.375}(0.609, 0.329)
+  \begin{minipage}[t][0.064\paperheight]{\linewidth}
+    {\tiny Ω-Notation}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.106}(0.099, 0.877)
+  \begin{minipage}[b][0.026\paperheight]{\linewidth}
+    \raggedright
+    \fontsize{3}{3.3}\selectfont
+    06.03.2026
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.106}(0.099, 0.928)
+  \begin{minipage}[b][0.031\paperheight]{\linewidth}
+    \raggedright
+    \fontsize{3}{3.3}\selectfont
+    Seite 4
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.368}(0.613, 0.394)
+  \begin{minipage}[t][0.164\paperheight]{\linewidth}
+    \includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{extracted_media/image_2.png}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.368}(0.613, 0.394)
+  \begin{minipage}[t][0.164\paperheight]{\linewidth}
+    \includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{extracted_media/image_2.png}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.375}(0.609, 0.131)
+  \begin{minipage}[t][0.166\paperheight]{\linewidth}
+    \includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{extracted_media/image_3.png}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.375}(0.609, 0.131)
+  \begin{minipage}[t][0.166\paperheight]{\linewidth}
+    \includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{extracted_media/image_3.png}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.512}(0.473, 0.652)
+  \begin{minipage}[t][0.209\paperheight]{\linewidth}
+    \includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{extracted_media/image_4.png}
+  \end{minipage}
+\end{textblock}
+\begin{textblock}{0.512}(0.473, 0.652)
+  \begin{minipage}[t][0.209\paperheight]{\linewidth}
+    \includegraphics[width=\linewidth, height=\textheight, keepaspectratio]{extracted_media/image_4.png}
+  \end{minipage}
+\end{textblock}
