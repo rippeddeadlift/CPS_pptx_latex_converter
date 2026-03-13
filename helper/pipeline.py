@@ -13,6 +13,7 @@ from helper.utils import (
     detect_header_candidate,
     enrich_and_group_slides,
     get_slide_dimensions,
+    inject_group_metrics,
     load_slides,
     sanitize_latex,
     save_json
@@ -109,7 +110,7 @@ def step_generate_latex(config) -> str | None:
 
     meta = extract_metadata(config)
     slide_width, slide_height = get_slide_dimensions(config.PPTX_INPUT)
-
+    slides = inject_group_metrics(slides, config.PPTX_INPUT)
     slides = enrich_and_group_slides(slides, slide_width, slide_height)
 
     header_text = None

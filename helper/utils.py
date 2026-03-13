@@ -4,6 +4,7 @@ from pathlib import Path
 import sys, re, json
 from collections import Counter
 from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE_TYPE
 
 RESET = "\033[0m"
 RED = "\033[31m"
@@ -101,7 +102,27 @@ def get_and_create_next_run_dir(base_dir: Path) -> Path:
 
 
 
-
+def resolve_absolute_bbox(child_bbox, parent):
+    """Berechnet die echte Bounding Box anhand der Gruppen-Metriken."""
+    scale_x = parent['width'] / parent['chExt_x'] if parent['chExt_x'] else 1
+    scale_y = parent['height'] / parent['chExt_y'] if parent['chExt_y'] else 1
+    
+    # Angenommen, deine bbox nutzt 'l' (left) und 't' (top). Ggf. an Docling-Keys anpassen.
+    abs_l = parent['left'] + (child_bbox['l'] - parent['chOff_x']) * scale_x
+    abs_t = parent['top'] + (child_bbox['t'] - parent['chOff_y']) * scale_y
+    
+    child_w = child_bbox['r'] - child_bbox['l']
+    child_h = child_bbox['b'] - child_bbox['t']
+    
+    abs_w = child_w * scale_x
+    abs_h = child_h * scale_y
+    
+    return {
+        'l': abs_l, 
+        't': abs_t, 
+        'r': abs_l + abs_w, 
+        'b': abs_t + abs_h
+    }
 
 def calculate_geometry(bbox: dict, page_width: float, page_height: float) -> dict | None:
     """
@@ -174,7 +195,7 @@ def group_elements(elements: list) -> list:
                 text = "\n".join(el['text'] for _, el in items)
                 grouped.append({
                     "type": "header",
-                    "geometry": get_union_geometry([el for _, el in items]),
+                    "geometry": items[0][1]['geometry'],
                     "text": text.strip(),
                     "fontsize": "3pt", 
                 })
@@ -187,7 +208,7 @@ def group_elements(elements: list) -> list:
                 text = "\n".join(el['text'] for _, el in items)
                 grouped.append({
                     "type": "footer",
-                    "geometry": get_union_geometry([el for _, el in items]),
+                    "geometry": items[0][1]['geometry'],
                     "text": text.strip(),
                     "fontsize": "3pt",
                 })
@@ -213,7 +234,7 @@ def group_elements(elements: list) -> list:
                 
                 subset = group[blk[0] : blk[-1] + 1]
                 code_text = "\n".join(el['text'] for idx, el in subset if 'text' in el)
-                union_geo = get_union_geometry([el for idx, el in subset])
+                union_geo = subset[0][1]['geometry']
                 
                 grouped.append({
                     "type": "codeblock",
@@ -234,7 +255,7 @@ def group_elements(elements: list) -> list:
                         break
 
                 items = [el['text'] for idx, el in list_like if 'text' in el]
-                union_geo = get_union_geometry([el for idx, el in list_like])
+                union_geo = list_like[0][1]['geometry']
                 
                
                 is_list = False
@@ -341,6 +362,40 @@ def get_slide_dimensions(pptx_path: str) -> tuple[int, int]:
         print(f"{YELLOW}Could not load PPTX dimensions: {e}{RESET}")
         return 0, 0
     
+
+def inject_group_metrics(docling_slides: list, pptx_path: str) -> list:
+    """
+    Gleicht Docling-Elemente mit python-pptx ab und injiziert 'parent_group',
+    falls ein Element Teil einer Gruppe ist.
+    """
+    prs = Presentation(pptx_path)
+    
+    for slide_idx, slide_data in enumerate(docling_slides):
+        if slide_idx >= len(prs.slides):
+            break
+            
+        pptx_slide = prs.slides[slide_idx]
+        docling_elements = slide_data.get('elements', [])
+        
+        for shape in pptx_slide.shapes:
+            if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+                xfrm = shape._element.grpSpPr.xfrm
+                parent_metrics = {
+                    'left': shape.left, 'top': shape.top, 
+                    'width': shape.width, 'height': shape.height,
+                    'chOff_x': xfrm.chOff.x, 'chOff_y': xfrm.chOff.y,
+                    'chExt_x': xfrm.chExt.cx, 'chExt_y': xfrm.chExt.cy
+                }
+                
+                for child in shape.shapes:
+                    # Finde das passende Docling-Element anhand der fehlerhaften lokalen X-Koordinate
+                    # (Toleranzwert einbauen, da Docling intern leicht runden könnte)
+                    for el in docling_elements:
+                        if 'bbox' in el and abs(el['bbox']['l'] - child.left) < 100:
+                            el['parent_group'] = parent_metrics
+                            
+    return docling_slides
+
 def enrich_and_group_slides(slides: list, slide_width: int, slide_height: int) -> list:
     """
     Processes raw slide data by normalizing element geometry and grouping related items.
@@ -354,9 +409,17 @@ def enrich_and_group_slides(slides: list, slide_width: int, slide_height: int) -
         
         for el in elements:
             if 'bbox' in el:
+                if 'parent_group' in el: 
+                    el['bbox'] = resolve_absolute_bbox(el['bbox'], el['parent_group'])
+                
                 geo = calculate_geometry(el['bbox'], slide_width, slide_height)
                 el['geometry'] = geo
                 del el['bbox']
+            
+            if 'parent_group' in el:
+                del el['parent_group']
+        
+        elements = [el for el in elements if not (el.get('type') == 'picture' and 'label' not in el)]
         
         slide['elements'] = group_elements(elements)
         
@@ -396,46 +459,52 @@ def sanitize_latex(llm_text: str) -> str:
     return latex
 
 
-def get_union_geometry(elements: list) -> dict | None:
-    """
-    Calculates the union bounding box for a group of elements.
+# def get_union_geometry(elements: list) -> dict | None:
+#     """
+#     Calculates the union bounding box for a group of elements.
 
-    Iterates through the provided elements to find the minimum x/y coordinates 
-    and the maximum extension to compute a single geometry dictionary ('x', 'y', 'w', 'h') 
-    that encloses all items.
-    """
-    if not elements:
-        return None
+#     Iterates through the provided elements to find the minimum x/y coordinates 
+#     and the maximum extension to compute a single geometry dictionary ('x', 'y', 'w', 'h') 
+#     that encloses all items.
+#     """
+#     if not elements:
+#         return None
+    
+#     print(f"\n--- Berechne Union für {len(elements)} Elemente ---")
+#     for i, el in enumerate(elements):
+#         print(f"VORHER Element {i+1}: {el.get('geometry')}")
 
-    min_x = float('inf')
-    min_y = float('inf')
-    max_r = float('-inf') 
-    max_b = float('-inf') 
+#     min_x = float('inf')
+#     min_y = float('inf')
+#     max_r = float('-inf') 
+#     max_b = float('-inf') 
 
-    for el in elements:
-        geo = el.get('geometry', {})
-        if not geo: 
-            continue
+#     for el in elements:
+#         geo = el.get('geometry', {})
+#         if not geo: 
+#             continue
             
-        x = geo.get('x', 0)
-        y = geo.get('y', 0)
-        w = geo.get('w', 0)
-        h = geo.get('h', 0)
+#         x = geo.get('x', 0)
+#         y = geo.get('y', 0)
+#         w = geo.get('w', 0)
+#         h = geo.get('h', 0)
         
-        min_x = min(min_x, x)
-        min_y = min(min_y, y)
-        max_r = max(max_r, x + w)
-        max_b = max(max_b, y + h)
+#         min_x = min(min_x, x)
+#         min_y = min(min_y, y)
+#         max_r = max(max_r, x + w)
+#         max_b = max(max_b, y + h)
 
-    new_w = max_r - min_x
-    new_h = max_b - min_y
+#     new_w = max_r - min_x
+#     new_h = max_b - min_y
 
-    return {
-        "x": round(min_x, 3),
-        "y": round(min_y, 3),
-        "w": round(new_w, 3),
-        "h": round(new_h, 3)
-    }
+#     print(f"NACHHER (Gesamt-Box): x={min_x:.3f}, y={min_y:.3f}, w={new_w:.3f}, h={new_h:.3f}\n")
+
+#     return {
+#         "x": round(min_x, 3),
+#         "y": round(min_y, 3),
+#         "w": round(new_w, 3),
+#         "h": round(new_h, 3)
+#     }
 
 
 
