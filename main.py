@@ -21,8 +21,8 @@ class Config:
     RAW_JSON_INPUT = JSON_OUTPUT_DIR / (PPTX_INPUT.stem + '.json')
     CLEANED_JSON_OUTPUT = JSON_OUTPUT_DIR / (PPTX_INPUT.stem + "_cleaned.json")
  
-    AGENT_LLM_MODEL = 'qwen2.5-coder:7b' 
-    # AGENT_LLM_MODEL = 'qwen3:8b' 
+    #AGENT_LLM_MODEL = 'qwen2.5-coder:7b' 
+    AGENT_LLM_MODEL = 'qwen3:8b' 
 
     @classmethod
     def setup_directories(cls):

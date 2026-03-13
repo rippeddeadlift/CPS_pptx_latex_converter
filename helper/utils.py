@@ -459,55 +459,6 @@ def sanitize_latex(llm_text: str) -> str:
     return latex
 
 
-# def get_union_geometry(elements: list) -> dict | None:
-#     """
-#     Calculates the union bounding box for a group of elements.
-
-#     Iterates through the provided elements to find the minimum x/y coordinates 
-#     and the maximum extension to compute a single geometry dictionary ('x', 'y', 'w', 'h') 
-#     that encloses all items.
-#     """
-#     if not elements:
-#         return None
-    
-#     print(f"\n--- Berechne Union für {len(elements)} Elemente ---")
-#     for i, el in enumerate(elements):
-#         print(f"VORHER Element {i+1}: {el.get('geometry')}")
-
-#     min_x = float('inf')
-#     min_y = float('inf')
-#     max_r = float('-inf') 
-#     max_b = float('-inf') 
-
-#     for el in elements:
-#         geo = el.get('geometry', {})
-#         if not geo: 
-#             continue
-            
-#         x = geo.get('x', 0)
-#         y = geo.get('y', 0)
-#         w = geo.get('w', 0)
-#         h = geo.get('h', 0)
-        
-#         min_x = min(min_x, x)
-#         min_y = min(min_y, y)
-#         max_r = max(max_r, x + w)
-#         max_b = max(max_b, y + h)
-
-#     new_w = max_r - min_x
-#     new_h = max_b - min_y
-
-#     print(f"NACHHER (Gesamt-Box): x={min_x:.3f}, y={min_y:.3f}, w={new_w:.3f}, h={new_h:.3f}\n")
-
-#     return {
-#         "x": round(min_x, 3),
-#         "y": round(min_y, 3),
-#         "w": round(new_w, 3),
-#         "h": round(new_h, 3)
-#     }
-
-
-
 def repair_latex_output(latex_code: str) -> str:
     """
     Repairs common hallucinated syntax errors in LLM-generated LaTeX.

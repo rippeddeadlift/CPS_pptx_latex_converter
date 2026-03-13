@@ -17,6 +17,8 @@ Konvertiert PowerPoint-Präsentationen in LaTeX Beamer-Folien inkl. Bilder und V
 2. **Modell laden:**
    ```bash
     ollama pull qwen2.5-coder:7b
+    oder 
+    ollama pull qwen3:8b
     ```
 3. **Starten:**
    ```bash
